@@ -140,7 +140,14 @@ def train(
         if epoch % save_model_interval == 0:
             torch.save(model.state_dict(), "VAE_epoch_{}.pkl".format(epoch))
 
-
+def get_latent(
+    model: nn.Module,
+    device: torch.device,
+    optimizer: torch.optim,
+    data: torch.Tensor
+    ):
+    model.eval()
+    return model.get_latent(data)
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # feature_dim = 6985
