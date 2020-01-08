@@ -100,6 +100,7 @@ def bce_kld_loss_function(recon_x, x, mu, logvar):
 
 def train(
     model: nn.Module,
+    device: torch.device,
     data: torch.Tensor,
     epochs: int = 800, 
     batch_size: int = 20, 
