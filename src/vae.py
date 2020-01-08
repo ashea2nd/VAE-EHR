@@ -90,7 +90,7 @@ class VAE(nn.Module):
 
 def bce_kld_loss_function(recon_x, x, mu, logvar):
     #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
+    BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -122,7 +122,7 @@ def train(
             batch = batch.to(device)
             optimizer.zero_grad()
             recon_batch, mu, logvar = model(batch)
-            loss = bce_kld_loss_function(recon_batch, data, mu, logvar)
+            loss = bce_kld_loss_function(recon_batch, batch, mu, logvar)
             loss.backward()
             train_loss += loss.item()
             optimizer.step()
@@ -130,12 +130,12 @@ def train(
             batch_idx = i / batch_size
             if batch_idx % log_interval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                    epoch, batch_idx * len(batch), len(train_loader.dataset),
-                    100. * batch_idx / len(train_loader),
+                    epoch, batch_idx * len(batch), len(data),
+                    100. * batch_idx / len(data),
                     loss.item() / len(data)))
 
         print('====> Epoch: {} Average loss: {:.4f}'.format(
-              epoch, train_loss / len(train_loader.dataset)))
+              epoch, train_loss / len(data)))
 
         if epoch % save_model_interval == 0:
             torch.save(model.state_dict(), "VAE_epoch_{}.pkl".format(epoch))
