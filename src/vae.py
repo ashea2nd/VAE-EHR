@@ -106,7 +106,7 @@ def train(
     log_interval: int = 100,
     save_model_interval: int = 50
     ):
-    for epoch in epochs:
+    for epoch in range(epochs):
         model.train()
         train_loss = 0
         data_length = data.shape[0]
