@@ -5,6 +5,8 @@ import collections
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
+from torch.distributions import Normal, Poisson, kl_divergence as kl
+
 
 class VAE(nn.Module):
 
