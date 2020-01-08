@@ -131,11 +131,11 @@ def train(
             if batch_idx % log_interval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, batch_idx * len(batch), len(data),
-                    100. * batch_idx / len(data),
+                    100. * batch_idx / len(data_length/batch_size),
                     loss.item() / len(data)))
 
         print('====> Epoch: {} Average loss: {:.4f}'.format(
-              epoch, train_loss / len(data)))
+              epoch, train_loss / len(data_length/batch_size)))
 
         if epoch % save_model_interval == 0:
             torch.save(model.state_dict(), "VAE_epoch_{}.pkl".format(epoch))
