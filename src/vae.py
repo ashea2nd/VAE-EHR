@@ -111,7 +111,7 @@ def train(
         train_loss = 0
         data_length = data.shape[0]
         
-        assert data_length / batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
+        assert data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
         
         for i in tqdm(range(0, data_length, batch_size)):
             batch = data[i:i + batch_size]
