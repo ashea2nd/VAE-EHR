@@ -63,14 +63,14 @@ class VAE(nn.Module):
         )
         self.output_decoder = nn.Linear(decoder_dim[-1][-1], feature_dim)
 
-    def reparameterize_gaussian(mu, var):
+    def reparameterize_gaussian(self, mu, var):
         return Normal(mu, var.sqrt()).rsample()
 
     def get_latent(self, x: torch.Tensor):
         q = self.encoder(x)
         q_m = self.mean_encoder(q)
         q_v = torch.exp(self.var_encoder(q)) + 1e-4
-        latent = reparameterize_gaussian(q_m, q_v)
+        latent = self.reparameterize_gaussian(q_m, q_v)
         return latent, q_m, q_v
 
     def forward(self, x: torch.Tensor):
@@ -78,7 +78,7 @@ class VAE(nn.Module):
         q = self.encoder(x)
         q_m = self.mean_encoder(q)
         q_v = torch.exp(self.var_encoder(q)) + 1e-4
-        latent = reparameterize_gaussian(q_m, q_v)
+        latent = self.reparameterize_gaussian(q_m, q_v)
 
         #Pass thru Decoder
         y = self.decoder(latent)
@@ -101,6 +101,7 @@ def bce_kld_loss_function(recon_x, x, mu, logvar):
 def train(
     model: nn.Module,
     device: torch.device,
+    optimizer: torch.optim,
     data: torch.Tensor,
     epochs: int = 800, 
     batch_size: int = 20, 
