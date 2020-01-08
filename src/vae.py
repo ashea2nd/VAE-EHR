@@ -143,10 +143,10 @@ def train(
 def get_latent(
     model: nn.Module,
     device: torch.device,
-    optimizer: torch.optim,
     data: torch.Tensor
     ):
     model.eval()
+    data = data.to(device)
     return model.get_latent(data)
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
