@@ -33,8 +33,8 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            #nn.ReLU() if use_relu else None,
-                            #nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
+                            nn.ReLU() if use_relu else None,
+                            nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
                     for i, (n_in, n_out) in enumerate(encoder_dim)
@@ -55,8 +55,8 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            #nn.ReLU() if use_relu else None,
-                            #nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
+                            nn.ReLU() if use_relu else None,
+                            nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
                 for i, (n_in, n_out) in enumerate(decoder_dim)
@@ -64,6 +64,7 @@ class VAE(nn.Module):
             )
         )
         self.output_decoder = nn.Linear(decoder_dim[-1][-1], feature_dim)
+        self.output_decoder_sigmoid = nn.Sigmoid()
 
     def reparameterize_gaussian(self, mu, var):
         return Normal(mu, var.sqrt()).rsample()
@@ -84,7 +85,10 @@ class VAE(nn.Module):
 
         #Pass thru Decoder
         y = self.decoder(latent)
-        y = torch.sigmoid(self.output_decoder(y))
+        y = self.output_decoder(y)
+        y = self.output_decoder_sigmoid(y)
+
+        print("Variance min max:", torch.min(q_v), torch.max(q_v))
 
         return y, q_m, q_v
 
@@ -98,8 +102,9 @@ class VAETrainer:
 
     def bce_kld_loss_function(self, recon_x, x, mu, logvar):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-        assert (recon_x.data.cpu().numpy().all() >= 0. & recon_x.data.cpu().numpy().all() <= 1.), "Reconstruction has values out of range"
-        assert (x.data.cpu().numpy().all() >= 0. & x.data.cpu().numpy().all() <= 1.), "Original data has values out of range"
+        print("Min, max in recon:", torch.min(recon_x), torch.max(recon_x))
+        print("Min, max in orig:", torch.min(x), torch.max(x))
+
         BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
 
         # see Appendix B from VAE paper:
