@@ -91,14 +91,8 @@ class VAE(nn.Module):
 class VAETrainer:
     def __init__(
         self,
-        model: nn.Module,
-        device: torch.device, 
-        optimizer: torch.optim,
         experiment_name: str
         ):
-        self.model = model
-        self.device = device
-        self.optimizer = optimizer
         self.experiment_name = experiment_name
         self.elbos_per_epoch = []
 
@@ -116,6 +110,9 @@ class VAETrainer:
 
     def train(
         self,
+        model: nn.Module,
+        device: torch.device, 
+        optimizer: torch.optim,
         data: torch.Tensor,
         epochs: int = 800, 
         batch_size: int = 20, 
@@ -125,7 +122,7 @@ class VAETrainer:
 
         self.elbos_per_epoch = []
         for epoch in range(1, epochs+1):
-            self.model.train()
+            model.train()
             train_loss = 0
             data_length = data.shape[0]
             
@@ -133,13 +130,13 @@ class VAETrainer:
             
             for i in tqdm(range(0, data_length, batch_size)):
                 batch = data[i:i + batch_size]
-                batch = batch.to(self.device)
-                self.optimizer.zero_grad()
-                recon_batch, mu, logvar = self.model(batch)
+                batch = batch.to(device)
+                optimizer.zero_grad()
+                recon_batch, mu, logvar = model(batch)
                 loss = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
                 loss.backward()
                 train_loss += loss.item()
-                self.optimizer.step()
+                optimizer.step()
 
                 # batch_idx = i / batch_size
                 # if batch_idx % log_interval == 0:
@@ -154,12 +151,17 @@ class VAETrainer:
             self.elbos_per_epoch.append(elbo)
 
             if epoch % save_model_interval == 0:
-                torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
+                torch.save(model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
 
-    def encode_data(self, data: torch.Tensor):
-        self.model.eval()
-        data = data.to(self.device)
-        return self.model.get_latent(data)
+    def encode_data(
+        self, 
+        model: nn.Module,
+        device: torch.device,
+        data: torch.Tensor
+        ):
+        model.eval()
+        data = data.to(device)
+        return model.get_latent(data)
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # feature_dim = 6985
