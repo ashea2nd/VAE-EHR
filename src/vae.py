@@ -33,8 +33,8 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
-                            nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
+                            #nn.ReLU() if use_relu else None,
+                            #nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
                     for i, (n_in, n_out) in enumerate(encoder_dim)
@@ -55,8 +55,8 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
-                            nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
+                            #nn.ReLU() if use_relu else None,
+                            #nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
                 for i, (n_in, n_out) in enumerate(decoder_dim)
@@ -88,17 +88,17 @@ class VAE(nn.Module):
 
         return y, q_m, q_v
 
-def bce_kld_loss_function(recon_x, x, mu, logvar):
-    #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-    BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
+    def bce_kld_loss_function(recon_x, x, mu, logvar):
+        #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
+        BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
 
-    # see Appendix B from VAE paper:
-    # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
-    # https://arxiv.org/abs/1312.6114
-    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+        # see Appendix B from VAE paper:
+        # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+        # https://arxiv.org/abs/1312.6114
+        # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+        KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-    return BCE + KLD
+        return BCE + KLD
 
 def train(
     model: nn.Module,
@@ -140,7 +140,7 @@ def train(
         if epoch % save_model_interval == 0:
             torch.save(model.state_dict(), "VAE_epoch_{}.pkl".format(epoch))
 
-def get_latent(
+def encode_data(
     model: nn.Module,
     device: torch.device,
     data: torch.Tensor
