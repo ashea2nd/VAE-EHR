@@ -98,8 +98,8 @@ class VAETrainer:
 
     def bce_kld_loss_function(self, recon_x, x, mu, logvar):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-        assert (recon_x >= 0. & recon_x <= 1.).all(), "Reconstruction has values out of range"
-        assert (x >= 0. & x <= 1.).all(), "Original data has values out of range"
+        assert (recon_x.data.cpu().numpy().all() >= 0. & recon_x.data.cpu().numpy().all() <= 1.), "Reconstruction has values out of range"
+        assert (x.data.cpu().numpy().all() >= 0. & x.data.cpu().numpy().all() <= 1.), "Original data has values out of range"
         BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
 
         # see Appendix B from VAE paper:
