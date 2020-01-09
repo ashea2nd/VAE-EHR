@@ -104,7 +104,7 @@ class VAETrainer:
 
     def bce_kld_loss_function(self, recon_x, x, mu, logvar):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-        BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
+        BCE = F.binary_cross_entropy(recon_x, x.view(recon_x.shape), reduction='sum')
 
         # see Appendix B from VAE paper:
         # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -113,7 +113,7 @@ class VAETrainer:
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
         return BCE + KLD
-        
+
     def train(
         self,
         data: torch.Tensor,
