@@ -138,7 +138,9 @@ class VAETrainer:
         epochs: int = 800, 
         batch_size: int = 20, 
         save_model_interval: int = 50,
-        log_interval: int = 100
+        log_interval: int = 100,
+        clip_gradients: bool = False,
+        grad_norm_limit: float = 5
         ):
 
         self.elbos_per_epoch = []
@@ -160,7 +162,8 @@ class VAETrainer:
 
                 #print("GRAD NORMS", [p.grad.data.norm(2) for p in model.parameters()])
                 #Gradients are either super large or super small, ranging from 0 to 1e13 before blowing up
-                clip_grad_norm(self.model.parameters(), 5)
+                if clip_gradients:
+                    clip_grad_norm(self.model.parameters(), grad_norm_limit) #A value of 5 was shown to work
 
                 self.optimizer.step()
 
