@@ -49,24 +49,29 @@ class VAE(nn.Module):
         self.var_encoder = nn.Linear(encoder_dim[-1][-1], latent_dim)
 
         #Decoder
-        decoder_dim.insert(0, (latent_dim, decoder_dim[0][0]))
-        self.decoder = nn.Sequential(
-            collections.OrderedDict(
-                [
-                    (
-                        "Layer {}".format(i),
-                        nn.Sequential(
-                            nn.Linear(n_in, n_out, bias=bias),
-                            nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
-                            nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
-                        ),
-                    )
-                for i, (n_in, n_out) in enumerate(decoder_dim)
-                ]
+        if len(decoder_dim) == 0:
+            self.decoder = []
+            self.output_decoder = nn.Linear(latent_dim, feature_dim)
+        else:
+            decoder_dim.insert(0, (latent_dim, decoder_dim[0][0]))
+            self.decoder = nn.Sequential(
+                collections.OrderedDict(
+                    [
+                        (
+                            "Layer {}".format(i),
+                            nn.Sequential(
+                                nn.Linear(n_in, n_out, bias=bias),
+                                nn.BatchNorm1d(n_out) if use_batch_norm else None,
+                                nn.ReLU() if use_relu else None,
+                                nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
+                            ),
+                        )
+                    for i, (n_in, n_out) in enumerate(decoder_dim)
+                    ]
+                )
             )
-        )
-        self.output_decoder = nn.Linear(decoder_dim[-1][-1], feature_dim)
+            self.output_decoder = nn.Linear(decoder_dim[-1][-1], feature_dim)
+            
         self.output_decoder_sigmoid = nn.Sigmoid()
 
     def reparameterize_gaussian(self, mu, var):
