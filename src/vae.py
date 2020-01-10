@@ -1,10 +1,13 @@
 from typing import List, Tuple
 from tqdm import tqdm
 import collections
+import matplotlib.pyplot as plt
+import numpy as np
 
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
+from torch.nn.utils import clip_grad_norm
 from torch.distributions import Normal, Poisson, kl_divergence as kl
 
 
@@ -33,7 +36,7 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
+                            #nn.ReLU() if use_relu else None,
                             nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
@@ -55,7 +58,7 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
+                            #nn.ReLU() if use_relu else None,
                             nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
@@ -88,22 +91,36 @@ class VAE(nn.Module):
         y = self.output_decoder(y)
         y = self.output_decoder_sigmoid(y)
 
-        print("Variance min max:", torch.min(q_v), torch.max(q_v))
+        #q_v = torch.clamp(q_v, max=100.)
+        #Saw that variance blows up around order 1e2
+
+        #print("Variance min max:", torch.min(q_v), torch.max(q_v))
+        #print("Mean min max:", torch.min(q_v), torch.max(q_v))
+
 
         return y, q_m, q_v
 
 class VAETrainer:
     def __init__(
         self,
+        model: nn.Module,
+        device: torch.device,
+        optimizer: torch.optim,
         experiment_name: str
         ):
+
+        self.model = model
+        self.device = device
+        self.model.to(device)
+        self.optimizer = optimizer
+
         self.experiment_name = experiment_name
         self.elbos_per_epoch = []
 
     def bce_kld_loss_function(self, recon_x, x, mu, logvar):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
-        print("Min, max in recon:", torch.min(recon_x), torch.max(recon_x))
-        print("Min, max in orig:", torch.min(x), torch.max(x))
+        #print("Min, max in recon:", torch.min(recon_x), torch.max(recon_x))
+        #print("Min, max in orig:", torch.min(x), torch.max(x))
 
         BCE = F.binary_cross_entropy(recon_x, x.view(-1, recon_x.shape[1]), reduction='sum')
 
@@ -117,9 +134,6 @@ class VAETrainer:
 
     def train(
         self,
-        model: nn.Module,
-        device: torch.device, 
-        optimizer: torch.optim,
         data: torch.Tensor,
         epochs: int = 800, 
         batch_size: int = 20, 
@@ -129,7 +143,7 @@ class VAETrainer:
 
         self.elbos_per_epoch = []
         for epoch in range(1, epochs+1):
-            model.train()
+            self.model.train()
             train_loss = 0
             data_length = data.shape[0]
             
@@ -137,13 +151,18 @@ class VAETrainer:
             
             for i in tqdm(range(0, data_length, batch_size)):
                 batch = data[i:i + batch_size]
-                batch = batch.to(device)
-                optimizer.zero_grad()
-                recon_batch, mu, logvar = model(batch)
+                batch = batch.to(self.device)
+                self.optimizer.zero_grad()
+                recon_batch, mu, logvar = self.model(batch)
                 loss = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
                 loss.backward()
                 train_loss += loss.item()
-                optimizer.step()
+
+                #print("GRAD NORMS", [p.grad.data.norm(2) for p in model.parameters()])
+                #Gradients are either super large or super small, ranging from 0 to 1e13 before blowing up
+                clip_grad_norm(self.model.parameters(), 5)
+
+                self.optimizer.step()
 
                 # batch_idx = i / batch_size
                 # if batch_idx % log_interval == 0:
@@ -158,17 +177,21 @@ class VAETrainer:
             self.elbos_per_epoch.append(elbo)
 
             if epoch % save_model_interval == 0:
-                torch.save(model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
+                torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
 
-    def encode_data(
-        self, 
-        model: nn.Module,
-        device: torch.device,
-        data: torch.Tensor
-        ):
-        model.eval()
-        data = data.to(device)
-        return model.get_latent(data)
+    def encode_data(self, data: torch.Tensor):
+        self.model.eval()
+        data = data.to(self.device)
+        return self.model.get_latent(data)
+
+    def plot_elbo(self):
+        plt.figure(figsize=(8,5))
+        plt.plot(np.log(self.elbos_per_epoch))
+        plt.ylabel("Log ELBO")
+        plt.xlabel("Epoch")
+        plt.savefig("ELBO_{}.png".format(self.experiment_name))
+        plt.show()
+
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # feature_dim = 6985
