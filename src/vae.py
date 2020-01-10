@@ -79,15 +79,29 @@ class VAE(nn.Module):
         latent = self.reparameterize_gaussian(q_m, q_v)
         return latent, q_m, q_v
 
+    def encode(self, x: torch.Tensor):
+        for layers in self.encoder:
+            for layer in layers:
+                if layer is not None:
+                    x = layer(x)
+        return x
+
+    def decode(self, x: torch.Tensor):
+        for layers in self.decoder:
+            for layer in layers:
+                if layer is not None:
+                    x = layer(x)
+        return x
+
     def forward(self, x: torch.Tensor):
         #Pass thru Encoder
-        q = self.encoder(x)
+        q = self.encode(x)
         q_m = self.mean_encoder(q)
         q_v = torch.exp(self.var_encoder(q)) + 1e-4
         latent = self.reparameterize_gaussian(q_m, q_v)
 
         #Pass thru Decoder
-        y = self.decoder(latent)
+        y = self.decode(latent)
         y = self.output_decoder(y)
         y = self.output_decoder_sigmoid(y)
 
@@ -162,6 +176,7 @@ class VAETrainer:
 
                 #print("GRAD NORMS", [p.grad.data.norm(2) for p in model.parameters()])
                 #Gradients are either super large or super small, ranging from 0 to 1e13 before blowing up
+                # clip_grad_norm(self.model.parameters(), 5)
                 if clip_gradients:
                     clip_grad_norm(self.model.parameters(), grad_norm_limit) #A value of 5 was shown to work
 
