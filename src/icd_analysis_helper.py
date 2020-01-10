@@ -10,8 +10,8 @@ class ICDAnalysisHelper:
     patient_icd_df: pd.DataFrame
     ):
 
-    self.icd9codes_df = icd9codes_df
-    self.patient_icd_df = patient_icd_df
+        self.icd9codes_df = icd9codes_df
+        self.patient_icd_df = patient_icd_df
 
     #Used for DISEASE clustering
     def get_icd_idxs(
