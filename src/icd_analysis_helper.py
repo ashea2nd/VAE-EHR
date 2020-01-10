@@ -64,7 +64,7 @@ class ICDAnalysisHelper:
         return patients_with_disease.index.tolist()
 
     def most_common_diseases_in_cohort(
-        self
+        self,
         patient_idxs: List[int]
         ):
         patients_of_interest = self.patient_icd_df.drop('SUBJECT_ID', axis=1).iloc[patient_idxs]
