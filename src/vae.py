@@ -220,8 +220,13 @@ class VAETrainer:
     def encode_data(self, data: torch.Tensor):
         self.model.eval()
         data = data.to(self.device)
-        latent, q_m, q_v = self.model.get_latent(data)
-        loss, BCE, KLD = self.bce_kld_loss_function(recon_x=latent, x=data, mu=q_m, logvar=q_v)
+        return self.model.get_latent(data)
+
+    def reconstruct_data(self, data: torch.Tensor):
+        self.model.eval()
+        data = data.to(self.device)
+        recon_x, q_m, q_v = self.model(data)
+        loss, BCE, KLD = self.bce_kld_loss_function(recon_x=recon_x, x=data, mu=q_m, logvar=q_v)
         return latent, q_m, q_v, loss, BCE, KLD
 
     def plot_elbo(self):
