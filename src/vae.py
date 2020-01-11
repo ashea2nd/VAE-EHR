@@ -71,7 +71,7 @@ class VAE(nn.Module):
                 )
             )
             self.output_decoder = nn.Linear(decoder_dim[-1][-1], feature_dim)
-            
+
         self.output_decoder_sigmoid = nn.Sigmoid()
 
     def reparameterize_gaussian(self, mu, var):
@@ -134,7 +134,10 @@ class VAETrainer:
         self.optimizer = optimizer
 
         self.experiment_name = experiment_name
+
         self.elbos_per_epoch = []
+        self.ave_kld_per_epoch = []
+        self.ave_bce_per_epoch = []
 
     def bce_kld_loss_function(self, recon_x, x, mu, logvar):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
@@ -149,7 +152,7 @@ class VAETrainer:
         # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-        return BCE + KLD
+        return BCE + KLD, BCE, KLD
 
     def train(
         self,
@@ -163,6 +166,8 @@ class VAETrainer:
         ):
 
         self.elbos_per_epoch = []
+        self.bce_per_epoch = []
+        self.kld_per_epoch = []
         for epoch in range(1, epochs+1):
             self.model.train()
             train_loss = 0
@@ -170,14 +175,19 @@ class VAETrainer:
             
             assert data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
             
+            train_bce = 0
+            train_kld = 0
             for i in tqdm(range(0, data_length, batch_size)):
                 batch = data[i:i + batch_size]
                 batch = batch.to(self.device)
                 self.optimizer.zero_grad()
                 recon_batch, mu, logvar = self.model(batch)
-                loss = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
+                loss, bce, kld = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
                 loss.backward()
+
                 train_loss += loss.item()
+                train_bce += bce.item()
+                train_kld += kld.item()
 
                 #print("GRAD NORMS", [p.grad.data.norm(2) for p in model.parameters()])
                 #Gradients are either super large or super small, ranging from 0 to 1e13 before blowing up
@@ -193,11 +203,16 @@ class VAETrainer:
                 #         epoch, batch_idx * len(batch), len(data),
                 #         100. * batch_idx / (data_length/batch_size),
                 #         loss.item() / len(data)))
-            total_batches = data_length / batch_size
-            elbo = train_loss/total_batches
-            print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, elbo))
             
-            self.elbos_per_epoch.append(elbo)
+            total_batches = data_length / batch_size
+            elbo_for_epoch = train_loss/total_batches
+            print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, elbo_for_epoch))
+            bce_for_epoch = train_bce / total_batches
+            kld_for_epoch = train_kld / total_batches
+
+            self.elbos_per_epoch.append(elbo_for_epoch)
+            self.bce_per_epoch.append(bce_for_epoch)
+            self.kld_per_epoch.append(kld_for_epoch)
 
             if epoch % save_model_interval == 0:
                 torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
@@ -205,7 +220,9 @@ class VAETrainer:
     def encode_data(self, data: torch.Tensor):
         self.model.eval()
         data = data.to(self.device)
-        return self.model.get_latent(data)
+        latent, q_m, q_v = self.model.get_latent(data)
+        loss, BCE, KLD = self.bce_kld_loss_function(recon_x=latent, x=data, mu=q_m, logvar=q_v)
+        return latent, q_m, q_v, loss, BCE, KLD
 
     def plot_elbo(self):
         plt.figure(figsize=(8,5))
@@ -215,6 +232,21 @@ class VAETrainer:
         plt.savefig("ELBO_{}.png".format(self.experiment_name))
         plt.show()
 
+    def plot_bce(self):
+        plt.figure(figsize=(8,5))
+        plt.plot(np.log(self.bce_per_epoch))
+        plt.ylabel("Log BCE")
+        plt.xlabel("Epoch")
+        plt.savefig("BCE_{}.png".format(self.experiment_name))
+        plt.show()
+
+    def plot_kld(self):
+        plt.figure(figsize=(8,5))
+        plt.plot(np.log(self.kld_per_epoch))
+        plt.ylabel("Log KLD")
+        plt.xlabel("Epoch")
+        plt.savefig("KLD_{}.png".format(self.experiment_name))
+        plt.show()
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # feature_dim = 6985
