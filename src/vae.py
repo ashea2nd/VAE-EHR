@@ -78,7 +78,7 @@ class VAE(nn.Module):
         return Normal(mu, var.sqrt()).rsample()
 
     def get_latent(self, x: torch.Tensor):
-        q = self.encoder(x)
+        q = self.encode(x)
         q_m = self.mean_encoder(q)
         q_v = torch.exp(self.var_encoder(q)) + 1e-4
         latent = self.reparameterize_gaussian(q_m, q_v)
