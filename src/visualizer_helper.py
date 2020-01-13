@@ -37,7 +37,7 @@ class Visualizer:
         fig = plt.figure(figsize=(8,5))
         ax = Axes3D(fig)
 
-        ax.scatter(
+        plot = ax.scatter(
             xs=X[:, 0], 
             ys=X[:, 1],
             zs=X[:, 2],
@@ -48,7 +48,7 @@ class Visualizer:
         ax.set_xlabel('component-one')
         ax.set_ylabel('component-two')
         ax.set_zlabel('component-three')
-        plt.colorbar()
+        fig.colorbar(plot)
         
         plt.savefig("{}.png".format(filename))
         plt.show()
