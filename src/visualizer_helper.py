@@ -38,9 +38,9 @@ class Visualizer:
         ax = Axes3D(fig)
 
         ax.scatter(
-            x=X[:, 0], 
-            y=X[:, 1],
-            z=X[:, 2],
+            xs=X[:, 0], 
+            ys=X[:, 1],
+            zs=X[:, 2],
             c=colors, 
             cmap='cool', 
             alpha=0.05
