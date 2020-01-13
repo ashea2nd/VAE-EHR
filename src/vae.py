@@ -123,13 +123,13 @@ class VAETrainer:
     def __init__(
         self,
         model: nn.Module,
-        device: torch.device,
         optimizer: torch.optim,
         experiment_name: str
         ):
 
         self.model = model
-        self.device = device
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         self.model.to(device)
         self.optimizer = optimizer
 
