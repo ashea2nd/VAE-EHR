@@ -10,8 +10,8 @@ from torch import nn, optim
 import matplotlib.pyplot as plt
 
 class Visualizer:
-    def tsne_embedding(self, X):
-        return TSNE(n_components=2, perplexity=15, learning_rate=10).fit_transform(X)
+    def tsne_embedding(self, X, n_components=2):
+        return TSNE(n_components=n_components, method="barnes_hut").fit_transform(X)
 
     def umap_embedding(self, X):
         return UMAP().fit_transform(X)
