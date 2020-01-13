@@ -22,7 +22,7 @@ class ICDAnalysisHelper:
         
         idxs = []
         for substring in substrings:
-            icds_with_substring = icd9codes[icd9codes.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
+            icds_with_substring = self.icd9codes_df[self.icd9codes_df.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
             print("Occurences of {0} before filter: {1}".format(substring, len(icds_with_substring)))
             
             icds_with_substring_and_in_patient_icd_df = [icd for icd in icds_with_substring if icd in self.patient_icd_df.columns]
@@ -33,7 +33,7 @@ class ICDAnalysisHelper:
             idxs += idx
         
         if verbose:
-            print(icd9codes[icd9codes.SHORT_TITLE.str.contains(substring, case=case_sensitive)])
+            print(self.icd9codes_df[self.icd9codes_df.SHORT_TITLE.str.contains(substring, case=case_sensitive)])
         print("Total found: {}".format(len(idxs)))
         return idxs
 
@@ -47,7 +47,7 @@ class ICDAnalysisHelper:
         idxs = []
         relevant_icds = []
         for substring in substrings:
-            icds_with_substring = icd9codes[icd9codes.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
+            icds_with_substring = self.icd9codes_df[self.icd9codes_df.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
             print("Occurences of {0} before filter: {1}".format(substring, len(icds_with_substring)))
 
             icds_with_substring_and_in_patient_icd_df = [icd for icd in icds_with_substring if icd in self.patient_icd_df.columns]
