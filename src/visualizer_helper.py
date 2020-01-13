@@ -11,13 +11,13 @@ from torch import nn, optim
 import matplotlib.pyplot as plt
 
 class Visualizer:
-    def tsne_embedding(X):
+    def tsne_embedding(self, X):
         return TSNE(n_components=2, perplexity=15, learning_rate=10).fit_transform(X)
 
-    def umap_embedding(X):
+    def umap_embedding(self, X):
         return UMAP().fit_transform(X)
 
-    def plot2d(X, filename, colors=None):
+    def plot2d(self, X, filename, colors=None):
         plt.figure(figsize=(8,5))
         plt.scatter(
             x=X[:, 0], 
