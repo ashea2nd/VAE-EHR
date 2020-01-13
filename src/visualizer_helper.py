@@ -1,6 +1,5 @@
 from typing import List, Tuple
-from tsnecuda import TSNE
-from umap import UMAP
+from cuml import TSNE, UMAP
 
 import numpy as np 
 import pandas as pd
