@@ -231,6 +231,7 @@ class VAETrainer:
         torch.cuda.empty_cache()
 
     def encode_data(self, data: torch.Tensor):
+        torch.cuda.empty_cache()
         self.model.eval()
         data = data.to(self.device)
         return self.model.get_latent(data)
