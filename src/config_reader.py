@@ -3,7 +3,7 @@ import json
 import arrow
 
 class Config:
-	def __init__(self, config_file_path: str):
+	def __init__(self, config_file_path: str, date: str=None):
 		
 		config = configparser.ConfigParser()
 		config.read(config_file_path)
@@ -14,7 +14,8 @@ class Config:
 		self.icd9codes_path = config['EXPERIMENT']['icd9codes_path']
 		
 		#Experiment Name
-		date = arrow.now().format('YYMMDD')
+		if not date:
+			date = arrow.now().format('YYMMDD')
 		experiment = config['EXPERIMENT']['experiment']
 		self.experiment_name = "{}_{}".format(date, experiment)
 
