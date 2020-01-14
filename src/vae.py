@@ -131,7 +131,7 @@ class VAETrainer:
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model.to(self.git addevice)
+        self.model.to(self.device)
         self.optimizer = optimizer
 
         self.experiment_name = experiment_name
