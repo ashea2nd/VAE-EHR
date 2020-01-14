@@ -130,7 +130,7 @@ class VAETrainer:
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model.to(self.device)
+        self.model.to(self.git addevice)
         self.optimizer = optimizer
 
         self.experiment_name = experiment_name
@@ -139,7 +139,13 @@ class VAETrainer:
         self.ave_kld_per_epoch = []
         self.ave_bce_per_epoch = []
 
-    def bce_kld_loss_function(self, recon_x, x, mu, logvar):
+    def bce_kld_loss_function(
+        self, 
+        recon_x: torch.Tensor, 
+        x: torch.Tensor, 
+        mu: torch.Tensor, 
+        logvar: torch.Tensor
+        ):
         #view() explanation: https://stackoverflow.com/questions/42479902/how-does-the-view-method-work-in-pytorch
         #print("Min, max in recon:", torch.min(recon_x), torch.max(recon_x))
         #print("Min, max in orig:", torch.min(x), torch.max(x))
@@ -150,7 +156,7 @@ class VAETrainer:
         # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
         # https://arxiv.org/abs/1312.6114
         # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-        KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+        KLD = -self.kld_beta*0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
         return BCE + KLD, BCE, KLD
 
@@ -158,7 +164,8 @@ class VAETrainer:
         self,
         data: torch.Tensor,
         epochs: int = 800, 
-        batch_size: int = 20, 
+        batch_size: int = 20,
+        kld_beta: float = 1.0,
         save_model_interval: int = 50,
         log_interval: int = 100,
         clip_gradients: bool = False,
@@ -168,6 +175,8 @@ class VAETrainer:
         self.elbos_per_epoch = []
         self.bce_per_epoch = []
         self.kld_per_epoch = []
+        self.kld_beta=kld_beta
+        print("Training with KLD Beta weight of {}".format(self.kld_beta))
         for epoch in range(1, epochs+1):
             self.model.train()
             train_loss = 0
