@@ -52,4 +52,3 @@ class Visualizer:
         
         plt.savefig("{}.png".format(filename))
         plt.show()
-
