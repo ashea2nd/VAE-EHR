@@ -124,7 +124,8 @@ class VAETrainer:
         self,
         model: nn.Module,
         optimizer: torch.optim,
-        experiment_name: str
+        experiment_name: str,
+        kld_beta: float = 1.0
         ):
 
         self.model = model
@@ -138,6 +139,8 @@ class VAETrainer:
         self.elbos_per_epoch = []
         self.ave_kld_per_epoch = []
         self.ave_bce_per_epoch = []
+
+        self.kld_beta = kld_beta
 
     def bce_kld_loss_function(
         self, 
@@ -175,7 +178,6 @@ class VAETrainer:
         self.elbos_per_epoch = []
         self.bce_per_epoch = []
         self.kld_per_epoch = []
-        self.kld_beta=kld_beta
         print("Training with KLD Beta weight of {}".format(self.kld_beta))
         for epoch in range(1, epochs+1):
             self.model.train()

@@ -34,5 +34,8 @@ class Config:
 		if len(decoder_dim) > 0:
 			self.decoder_dim = [ (decoder_dim[i], decoder_dim[i+1]) for i in range(len(decoder_dim) - 1) ]
 
+		###TRAINER SETTINGS
 		#Use Relu in Encoder
 		self.use_relu = bool(config['MODEL SETTINGS']['use_relu'])
+
+		self.kld_beta = float(config['MODEL SETTINGS']['kld_beta'])
