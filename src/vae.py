@@ -127,6 +127,7 @@ class VAETrainer:
         experiment_name: str,
         kld_beta: float = 1.0
         ):
+        torch.cuda.empty_cache()
 
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
