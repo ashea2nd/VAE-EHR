@@ -228,12 +228,15 @@ class VAETrainer:
             if epoch % save_model_interval == 0:
                 torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
 
+        torch.cuda.empty_cache()
+
     def encode_data(self, data: torch.Tensor):
         self.model.eval()
         data = data.to(self.device)
         return self.model.get_latent(data)
 
     def reconstruct_data(self, data: torch.Tensor):
+        torch.cuda.empty_cache()
         self.model.eval()
         data = data.to(self.device)
         recon_x, q_m, q_v = self.model(data)
