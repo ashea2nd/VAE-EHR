@@ -63,7 +63,7 @@ class ICDAnalysisHelper:
             relevant_icds += icds_with_substring_and_in_patient_icd_df
             
         print("Total Relevant ICDs: {}".format(len(relevant_icds)))
-        if not patient_subset_df:
+        if type(patient_subset_df) == None:
             patients_with_disease = cls.patient_icd_df.loc[:, relevant_icds].any(axis=1)
             patients_with_disease = patients_with_disease[patients_with_disease == True]
             patient_idxs = patients_with_disease.index.tolist()
