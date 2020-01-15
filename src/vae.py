@@ -236,7 +236,7 @@ class VAETrainer:
                 val_bce = 0
                 val_kld = 0
                 validation_data_length = validation_data.shape[0]
-                for i in tqdm(range(0, validation_data_length, batch_size)):
+                for i in range(0, validation_data_length, batch_size):
                     batch = validation_data[i:i + batch_size]
                     batch = batch.to(self.device)
                     recon_batch, mu, logvar = self.model(batch)
