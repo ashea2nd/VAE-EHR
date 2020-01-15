@@ -137,8 +137,8 @@ class VAETrainer:
         self.experiment_name = experiment_name
 
         self.train_elbos_per_epoch = []
-        self.train_ave_kld_per_epoch = []
         self.train_ave_bce_per_epoch = []
+        self.train_ave_kld_per_epoch = []
 
         self.val_elbos_per_epoch = []
         self.val_ave_bce_per_epoch = []
@@ -181,8 +181,8 @@ class VAETrainer:
         ):
 
         self.train_elbos_per_epoch = []
-        self.train_bce_per_epoch = []
-        self.train_kld_per_epoch = []
+        self.train_ave_bce_per_epoch = []
+        self.train_ave_kld_per_epoch = []
 
         self.val_elbos_per_epoch = []
         self.val_ave_bce_per_epoch = []
@@ -225,8 +225,8 @@ class VAETrainer:
             print('====> Epoch: {} Average Training Loss: {:.4f}'.format(epoch, elbo_for_epoch))
 
             self.train_elbos_per_epoch.append(elbo_for_epoch)
-            self.train_bce_per_epoch.append(bce_for_epoch)
-            self.train_kld_per_epoch.append(kld_for_epoch)
+            self.train_ave_bce_per_epoch.append(bce_for_epoch)
+            self.train_ave_kld_per_epoch.append(kld_for_epoch)
 
             if epoch % save_model_interval == 0:
                 torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
@@ -283,7 +283,7 @@ class VAETrainer:
 
     def plot_bce(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.train_bce_per_epoch), label="Training")
+        plt.plot(np.log(self.train_ave_bce_per_epoch), label="Training")
         plt.plot(np.log(self.val_ave_bce_per_epoch), label="Validation")
         plt.ylabel("Log BCE")
         plt.xlabel("Epoch")
@@ -293,7 +293,7 @@ class VAETrainer:
 
     def plot_kld(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.train_kld_per_epoch), label="Training")
+        plt.plot(np.log(self.train_ave_kld_per_epoch), label="Training")
         plt.plot(np.log(self.val_ave_kld_per_epoch), label="Validation")
         plt.ylabel("Log KLD")
         plt.xlabel("Epoch")
