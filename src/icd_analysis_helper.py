@@ -47,6 +47,7 @@ class ICDAnalysisHelper:
         cls,
         substrings: List[str],
         case_sensitive: bool=False,
+        patient_subset_df: pd.DataFrame=None
         ):
         
         idxs = []
@@ -62,8 +63,13 @@ class ICDAnalysisHelper:
             relevant_icds += icds_with_substring_and_in_patient_icd_df
             
         print("Total Relevant ICDs: {}".format(len(relevant_icds)))
-        patients_with_disease = cls.patient_icd_df.loc[:, relevant_icds].any(axis=1)
-        patients_with_disease = patients_with_disease[patients_with_disease == True]
+        if not patient_subset_df:
+            patients_with_disease = cls.patient_icd_df.loc[:, relevant_icds].any(axis=1)
+            patients_with_disease = patients_with_disease[patients_with_disease == True]
+        else:
+            patients_with_disease = patient_subset_df.loc[:, relevant_icds].any(axis=1)
+            patients_with_disease = patients_with_disease[patients_with_disease == True]
+            
         print("Patients with disease(s): {}".format(len(patients_with_disease)))
         
         return patients_with_disease.index.tolist()
