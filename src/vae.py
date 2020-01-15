@@ -9,6 +9,7 @@ from torch import nn, optim
 from torch.nn import functional as F
 from torch.nn.utils import clip_grad_norm
 from torch.distributions import Normal, Poisson, kl_divergence as kl
+from torch.utils import data
 
 
 class VAE(nn.Module):
@@ -166,7 +167,7 @@ class VAETrainer:
 
     def train(
         self,
-        data: torch.Tensor,
+        X: torch.Tensor,
         epochs: int = 800, 
         batch_size: int = 20,
         kld_beta: float = 1.0,
@@ -183,14 +184,14 @@ class VAETrainer:
         for epoch in range(1, epochs+1):
             self.model.train()
             train_loss = 0
-            data_length = data.shape[0]
+            data_length = X.shape[0]
             
             assert data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
             
             train_bce = 0
             train_kld = 0
             for i in tqdm(range(0, data_length, batch_size)):
-                batch = data[i:i + batch_size]
+                batch = X[i:i + batch_size]
                 batch = batch.to(self.device)
                 self.optimizer.zero_grad()
                 recon_batch, mu, logvar = self.model(batch)
@@ -231,18 +232,18 @@ class VAETrainer:
 
         torch.cuda.empty_cache()
 
-    def encode_data(self, data: torch.Tensor):
+    def encode_data(self, X: torch.Tensor):
         torch.cuda.empty_cache()
         self.model.eval()
-        data = data.to(self.device)
-        return self.model.get_latent(data)
+        X = X.to(self.device)
+        return self.model.get_latent(X)
 
-    def reconstruct_data(self, data: torch.Tensor):
+    def reconstruct_data(self, X: torch.Tensor):
         torch.cuda.empty_cache()
         self.model.eval()
-        data = data.to(self.device)
-        recon_x, q_m, q_v = self.model(data)
-        loss, BCE, KLD = self.bce_kld_loss_function(recon_x=recon_x, x=data, mu=q_m, logvar=q_v)
+        X = X.to(self.device)
+        recon_x, q_m, q_v = self.model(X)
+        loss, BCE, KLD = self.bce_kld_loss_function(recon_x=recon_x, x=X, mu=q_m, logvar=q_v)
         return latent, q_m, q_v, loss, BCE, KLD
 
     def plot_elbo(self):
@@ -268,6 +269,22 @@ class VAETrainer:
         plt.xlabel("Epoch")
         plt.savefig("KLD_{}.png".format(self.experiment_name))
         plt.show()
+
+
+class PatientICDDataset(data.Dataset):
+    def __init__(self, patient_icd_path: str, train_val_idxs: List[int]):
+        self.patient_icd_path = patient_icd_path
+        self.train_val_idxs = train_val_idxs
+
+    def __len__(self):
+        return len(self.train_val_idxs)
+
+    def __getitem__(self, idx):
+        row = pd.read_csv(self.patient_icd_path, skiprows=self.train_val_idxs[idx], nrows=1)
+        row = row.drop('SUBJECT_ID', axis=1)
+        return row
+
+
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # feature_dim = 6985
