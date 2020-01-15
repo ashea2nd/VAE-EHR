@@ -272,28 +272,31 @@ class VAETrainer:
 
     def plot_elbo(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.train_elbos_per_epoch))
-        plt.plot(np.log(self.val_elbos_per_epoch))
+        plt.plot(np.log(self.train_elbos_per_epoch), label="Training")
+        plt.plot(np.log(self.val_elbos_per_epoch), label="Validation")
         plt.ylabel("Log ELBO")
         plt.xlabel("Epoch")
+        plt.legend(loc="upper right")
         plt.savefig("ELBO_{}.png".format(self.experiment_name))
         plt.show()
 
     def plot_bce(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.train_bce_per_epoch))
-        plt.plot(np.log(self.val_ave_bce_per_epoch))
+        plt.plot(np.log(self.train_bce_per_epoch), label="Training")
+        plt.plot(np.log(self.val_ave_bce_per_epoch), label="Validation")
         plt.ylabel("Log BCE")
         plt.xlabel("Epoch")
+        plt.legend(loc="upper right")
         plt.savefig("BCE_{}.png".format(self.experiment_name))
         plt.show()
 
     def plot_kld(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.train_kld_per_epoch))
-        plt.plot(np.log(self.val_ave_kld_per_epoch))
+        plt.plot(np.log(self.train_kld_per_epoch), label="Training")
+        plt.plot(np.log(self.val_ave_kld_per_epoch), label="Validation")
         plt.ylabel("Log KLD")
         plt.xlabel("Epoch")
+        plt.legend(loc="upper right")
         plt.savefig("KLD_{}.png".format(self.experiment_name))
         plt.show()
 
