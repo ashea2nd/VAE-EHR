@@ -127,8 +127,6 @@ class VAETrainer:
         experiment_name: str,
         kld_beta: float = 1.0
         ):
-        torch.cuda.empty_cache()
-
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -137,9 +135,13 @@ class VAETrainer:
 
         self.experiment_name = experiment_name
 
-        self.elbos_per_epoch = []
-        self.ave_kld_per_epoch = []
-        self.ave_bce_per_epoch = []
+        self.train_elbos_per_epoch = []
+        self.train_ave_kld_per_epoch = []
+        self.train_ave_bce_per_epoch = []
+
+        self.val_elbos_per_epoch = []
+        self.val_ave_bce_per_epoch = []
+        self.val_ave_kld_per_epoch = []
 
         self.kld_beta = kld_beta
 
@@ -167,6 +169,7 @@ class VAETrainer:
     def train(
         self,
         training_data: torch.Tensor,
+        validation_data: torch.Tensor,
         epochs: int = 800, 
         batch_size: int = 20,
         kld_beta: float = 1.0,
@@ -176,20 +179,25 @@ class VAETrainer:
         grad_norm_limit: float = 5
         ):
 
-        self.elbos_per_epoch = []
-        self.bce_per_epoch = []
-        self.kld_per_epoch = []
+        self.train_elbos_per_epoch = []
+        self.train_bce_per_epoch = []
+        self.train_kld_per_epoch = []
+
+        self.val_elbos_per_epoch = []
+        self.val_ave_bce_per_epoch = []
+        self.val_ave_kld_per_epoch = []
         print("Training with KLD Beta weight of {}".format(self.kld_beta))
         for epoch in range(1, epochs+1):
             self.model.train()
+            training_data_length = training_data.shape[0]
+            
+            assert training_data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
+            
+            ###TRAINING
             train_loss = 0
-            data_length = training_data.shape[0]
-            
-            assert data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
-            
             train_bce = 0
             train_kld = 0
-            for i in tqdm(range(0, data_length, batch_size)):
+            for i in tqdm(range(0, training_data_length, batch_size)):
                 batch = training_data[i:i + batch_size]
                 batch = batch.to(self.device)
                 self.optimizer.zero_grad()
@@ -209,36 +217,53 @@ class VAETrainer:
 
                 self.optimizer.step()
 
-                # batch_idx = i / batch_size
-                # if batch_idx % log_interval == 0:
-                #     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                #         epoch, batch_idx * len(batch), len(data),
-                #         100. * batch_idx / (data_length/batch_size),
-                #         loss.item() / len(data)))
-            
-            total_batches = data_length / batch_size
+            total_batches = training_data_length / batch_size
             elbo_for_epoch = train_loss/total_batches
-            print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, elbo_for_epoch))
             bce_for_epoch = train_bce / total_batches
             kld_for_epoch = train_kld / total_batches
+            print('====> Epoch: {} Average Training Loss: {:.4f}'.format(epoch, elbo_for_epoch))
 
-            self.elbos_per_epoch.append(elbo_for_epoch)
-            self.bce_per_epoch.append(bce_for_epoch)
-            self.kld_per_epoch.append(kld_for_epoch)
+            self.train_elbos_per_epoch.append(elbo_for_epoch)
+            self.train_bce_per_epoch.append(bce_for_epoch)
+            self.train_kld_per_epoch.append(kld_for_epoch)
 
             if epoch % save_model_interval == 0:
                 torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
 
-        torch.cuda.empty_cache()
+            ###VALIDATION
+            with torch.no_grad():
+                val_loss = 0
+                val_bce = 0
+                val_kld = 0
+                validation_data_length = validation_data.shape[0]
+                for i in tqdm(range(0, validation_data_length, batch_size)):
+                    batch = validation_data[i:i + batch_size]
+                    batch = batch.to(self.device)
+                    recon_batch, mu, logvar = self.model(batch)
+                    loss, bce, kld = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
+
+                    val_loss += loss.item()
+                    val_bce += bce.item()
+                    val_kld += kld.item()
+                
+                total_validation_batches = validation_data_length / batch_size
+                val_elbo_for_epoch = val_loss/total_validation_batches
+                val_bce_for_epoch = val_bce / total_validation_batches
+                val_kld_for_epoch = val_kld / total_validation_batches
+                print('====> Epoch: {} Average Validation Loss: {:.4f}'.format(epoch, val_elbo_for_epoch))
+
+                self.val_elbos_per_epoch.append(val_elbo_for_epoch)
+                self.val_ave_bce_per_epoch.append(val_bce_for_epoch)
+                self.val_ave_kld_per_epoch.append(val_kld_for_epoch)
+
+
 
     def encode_data(self, X: torch.Tensor):
-        torch.cuda.empty_cache()
         self.model.eval()
         X = X.to(self.device)
         return self.model.get_latent(X)
 
     def reconstruct_data(self, X: torch.Tensor):
-        torch.cuda.empty_cache()
         self.model.eval()
         X = X.to(self.device)
         recon_x, q_m, q_v = self.model(X)
@@ -247,7 +272,8 @@ class VAETrainer:
 
     def plot_elbo(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.elbos_per_epoch))
+        plt.plot(np.log(self.train_elbos_per_epoch))
+        plt.plot(np.log(self.val_elbos_per_epoch))
         plt.ylabel("Log ELBO")
         plt.xlabel("Epoch")
         plt.savefig("ELBO_{}.png".format(self.experiment_name))
@@ -255,7 +281,8 @@ class VAETrainer:
 
     def plot_bce(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.bce_per_epoch))
+        plt.plot(np.log(self.train_bce_per_epoch))
+        plt.plot(np.log(self.val_ave_bce_per_epoch))
         plt.ylabel("Log BCE")
         plt.xlabel("Epoch")
         plt.savefig("BCE_{}.png".format(self.experiment_name))
@@ -263,7 +290,8 @@ class VAETrainer:
 
     def plot_kld(self):
         plt.figure(figsize=(8,5))
-        plt.plot(np.log(self.kld_per_epoch))
+        plt.plot(np.log(self.train_kld_per_epoch))
+        plt.plot(np.log(self.val_ave_kld_per_epoch))
         plt.ylabel("Log KLD")
         plt.xlabel("Epoch")
         plt.savefig("KLD_{}.png".format(self.experiment_name))
