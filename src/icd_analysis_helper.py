@@ -11,8 +11,8 @@ class ICDAnalysisHelper:
         icd9codes_df: pd.DataFrame,
         patient_icd_df: pd.DataFrame):
 
-        # self.icd9codes_df = icd9codes_df
-        # self.patient_icd_df = patient_icd_df
+        self.icd9codes_df = icd9codes_df
+        self.patient_icd_df = patient_icd_df
 
         ICDAnalysisHelper.icd9codes_df = icd9codes_df
         ICDAnalysisHelper.patient_icd_df = patient_icd_df
@@ -42,42 +42,33 @@ class ICDAnalysisHelper:
         return idxs
 
     #Use for PATIENT clustering
-    @classmethod
     def get_patients_idxs_with_disease_keywords(
-        cls,
+        self,
+        patient_df: pd.DataFrame,
         substrings: List[str],
         case_sensitive: bool=False,
-        patient_subset_df: pd.DataFrame=None
         ):
         
         idxs = []
         relevant_icds = []
+        patient_df = patient_df.reset_index()
+        
         for substring in substrings:
-            icds_with_substring = cls.icd9codes_df[cls.icd9codes_df.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
+            icds_with_substring = self.icd9codes_df[self.icd9codes_df.LONG_TITLE.str.contains(substring, case=case_sensitive)].ICD9_CODE.tolist()
             print("Occurences of {0} before filter: {1}".format(substring, len(icds_with_substring)))
 
-            icds_with_substring_and_in_patient_icd_df = [icd for icd in icds_with_substring if icd in cls.patient_icd_df.columns]
+            icds_with_substring_and_in_patient_icd_df = [icd for icd in icds_with_substring if icd in patient_df.columns]
             icds_with_substring=icds_with_substring_and_in_patient_icd_df        
             print("After:", len(icds_with_substring))
             
             relevant_icds += icds_with_substring_and_in_patient_icd_df
             
         print("Total Relevant ICDs: {}".format(len(relevant_icds)))
-        if type(patient_subset_df) == None:
-            patients_with_disease = cls.patient_icd_df.loc[:, relevant_icds].any(axis=1)
-            patients_with_disease = patients_with_disease[patients_with_disease == True]
-            patient_idxs = patients_with_disease.index.tolist()
-        else:
-            patients_with_disease = patient_subset_df.loc[:, relevant_icds].any(axis=1)
-            patients_with_disease = patients_with_disease[patients_with_disease == True]
-            
-            ###the indexes in patients_with_disease are based on the ORIGINAL dataframe. We need the idxs in relative terms (so their actual)
-            ####row numbers. Hence, we use np.where to get the actual row
-            patient_idxs = [np.where(patients_with_disease.index == idx) for idx in patients_with_disease.index.tolist()]
-
+        patients_with_disease = patient_df.loc[:, relevant_icds].any(axis=1)
+        patients_with_disease = patients_with_disease[patients_with_disease == True]
         print("Patients with disease(s): {}".format(len(patients_with_disease)))
         
-        return patient_idxs
+        return patients_with_disease.index.tolist()
 
     @classmethod
     def most_common_diseases_in_cohort(
