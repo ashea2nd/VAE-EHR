@@ -21,7 +21,8 @@ class VAE(nn.Module):
         decoder_dim: List[Tuple[int, int]],
         dropout_rate: float = 0.1,
         use_batch_norm: bool = True,
-        use_relu: bool = True,
+        use_relu_encoder: bool = True,
+        use_relu_decoder: bool = True,
         bias: bool = True
         ):
         super().__init__()
@@ -36,7 +37,7 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Linear(n_in, n_out, bias=bias),
                             nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                            nn.ReLU() if use_relu else None,
+                            nn.ReLU() if use_relu_encoder else None,
                             nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
                     )
@@ -62,7 +63,7 @@ class VAE(nn.Module):
                             nn.Sequential(
                                 nn.Linear(n_in, n_out, bias=bias),
                                 nn.BatchNorm1d(n_out) if use_batch_norm else None,
-                                nn.ReLU() if use_relu else None,
+                                nn.ReLU() if use_relu_decoder else None,
                                 nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                             ),
                         )
