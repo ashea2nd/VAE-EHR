@@ -66,13 +66,18 @@ class ICDAnalysisHelper:
         if not patient_subset_df:
             patients_with_disease = cls.patient_icd_df.loc[:, relevant_icds].any(axis=1)
             patients_with_disease = patients_with_disease[patients_with_disease == True]
+            patient_idxs = patients_with_disease.index.tolist()
         else:
             patients_with_disease = patient_subset_df.loc[:, relevant_icds].any(axis=1)
             patients_with_disease = patients_with_disease[patients_with_disease == True]
             
+            ###the indexes in patients_with_disease are based on the ORIGINAL dataframe. We need the idxs in relative terms (so their actual)
+            ####row numbers. Hence, we use np.where to get the actual row
+            patient_idxs = [np.where(patients_with_disease.index == idx) for idx in patients_with_disease.index.tolist()]
+
         print("Patients with disease(s): {}".format(len(patients_with_disease)))
         
-        return patients_with_disease.index.tolist()
+        return patient_idxs
 
     @classmethod
     def most_common_diseases_in_cohort(
