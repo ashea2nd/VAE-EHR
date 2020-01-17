@@ -17,14 +17,14 @@ class Visualizer:
     def umap_embedding(self, X, n_components: int=2):
         return UMAP(n_components=n_components).fit_transform(X)
 
-    def plot2d(self, X, filename, colors=None):
+    def plot2d(self, X, filename, colors=None, alpha=0.05):
         plt.figure(figsize=(8,5))
         plt.scatter(
             x=X[:, 0], 
             y=X[:, 1],
             c=colors, 
             cmap='cool', 
-            alpha=0.05
+            alpha=alpha
         )
         plt.xlabel('component-one')
         plt.ylabel('component-two')

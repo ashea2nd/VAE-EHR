@@ -89,7 +89,8 @@ class ICDAnalysisHelper:
     @classmethod
     def get_icd_short_titles(
         cls,
-        icd9codes_list: List[str]
+        icd9codes_list: List[str],
+        verbose=True
         ):
         short_titles = cls.icd9codes_df[cls.icd9codes_df['ICD9_CODE'].isin(icd9codes_list)].SHORT_TITLE.values
         if len(short_titles) > 1:
@@ -97,13 +98,15 @@ class ICDAnalysisHelper:
         elif len(short_titles) == 1:
             return short_titles[0]
         else:
-            print("No short title found for ICD code {}".format(icd9codes_list))
+            if verbose:
+                print("No short title found for ICD code {}".format(icd9codes_list))
             return icd9codes_list[0]
 
     @classmethod
     def get_icd_long_titles(
         cls,
-        icd9codes_list: List[str]
+        icd9codes_list: List[str],
+        verbose=True
         ):
         long_titles = cls.icd9codes_df[cls.icd9codes_df['ICD9_CODE'].isin(icd9codes_list)].LONG_TITLE.values
         if len(long_titles) > 1:
@@ -111,5 +114,6 @@ class ICDAnalysisHelper:
         elif len(long_titles) == 1:
             return long_titles[0]
         else:
-            print("No long title found for ICD code {}".format(icd9codes_list))
+            if verbose:
+                print("No long title found for ICD code {}".format(icd9codes_list))
             return icd9codes_list[0]
