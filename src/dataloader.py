@@ -1,21 +1,21 @@
 import torch
-from torch.utils.data import Dataset, Dataloader
+from torch.utils.data import Dataset
 import pandas as pd
 from scipy.sparse import csr_matrix, coo_matrix
+import scipy
 import pickle
 import numpy as np
 import annoy
 from annoy import AnnoyIndex
  
-class MixehrICDImputationDataloader(Dataset):
+class MixehrICDImputationDataset(Dataset):
 
     def __init__(
         self, 
-        subject_ids_path: str, 
+        # subject_ids_path: str, 
         patient_topic_distribution_path: str,
         icd_topic_feature_distribution_path: str
         ):
-        self.subject_ids_df = pd.read_csv(subject_ids_path)
         self.patient_topic_distribution_df = pd.read_csv(patient_topic_distribution_path)
         self.icd_topic_feature_distribution_df = pd.read_csv(icd_topic_feature_distribution_path)
 
@@ -25,12 +25,11 @@ class MixehrICDImputationDataloader(Dataset):
         self.patient_topic_data = self.patient_topic_distribution_df.to_numpy()
         self.icd_topic_distribution = self.icd_topic_feature_distribution_df[topic_cols].to_numpy()
 
-        imputed_matrix = patient_topic_data @ icd_topic_distribution.T
-
-        imputed_df = pd.DataFrame(imputed_matrix, index=None, columns=icd_labels)
+    def get_feat_dim(self):
+        return self.icd_topic_distribution.T.shape[1]
 
     def __len__(self):
-        return len(self.subject_ids_df.index)
+        return len(self.patient_topic_distribution_df.index)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
@@ -39,7 +38,8 @@ class MixehrICDImputationDataloader(Dataset):
             idx = [idx]
 
         patient_topic_subset = self.patient_topic_data[idx]
-        return patient_topic_subset @ self.icd_topic_distribution.T
+        imputed_subset = patient_topic_subset @ self.icd_topic_distribution.T
+        return imputed_subset.astype(np.double)
 
 class PatientDataSparseCSR():
 

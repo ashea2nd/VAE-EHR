@@ -120,7 +120,7 @@ class VAE(nn.Module):
 
         return y, q_m, q_v
 
-class VAETrainer:
+class VAETrainerWithDataLoader:
     def __init__(
         self,
         model: nn.Module,
@@ -171,8 +171,8 @@ class VAETrainer:
         self,
         # training_data: torch.Tensor,
         # validation_data: torch.Tensor,
-        training_generator: torch.data.DataLoader,
-        validation_generator: torch.data.DataLoader,
+        training_generator: torch.utils.data.DataLoader,
+        validation_generator: torch.utils.data.DataLoader = None,
         epochs: int = 800, 
         batch_size: int = 20,
         kld_beta: float = 1.0,
@@ -192,9 +192,9 @@ class VAETrainer:
         print("Training with KLD Beta weight of {}".format(self.kld_beta))
         for epoch in range(1, epochs+1):
             self.model.train()
-            training_data_length = training_data.shape[0]
+            # training_data_length = training_data.shape[0]
             
-            assert training_data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
+            # assert training_data_length % batch_size == 0, "data and batch size are not compatible. Data Size: {}, Batch Size: {}".format(data_length, batch_size)
             
             ###TRAINING
             train_loss = []
@@ -204,6 +204,8 @@ class VAETrainer:
                 # batch = training_data[i:i + batch_size]
             for batch in tqdm(training_generator):
                 batch = batch.to(self.device)
+                print(type(batch))
+                print(batch.type())
                 self.optimizer.zero_grad()
                 recon_batch, mu, logvar = self.model(batch)
                 loss, bce, kld = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
