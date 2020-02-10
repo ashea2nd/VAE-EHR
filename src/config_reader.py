@@ -12,6 +12,7 @@ class Config:
 		#Path to Patient_ICD and ICD9Code CSV's
 		self.patient_icd_path = config['EXPERIMENT']['patient_icd_path']
 		self.icd9codes_path = config['EXPERIMENT']['icd9codes_path']
+		self.subject_ids_path = config['EXPERIMENT']['subject_ids_path']
 		
 		#Experiment Name
 		if not date:
