@@ -282,19 +282,24 @@ class VAETrainerWithDataLoader:
         data_generator.shuffle = False
         self.model.eval()
 
-        latent_all = torch.Tensor
-        q_m_all = torch.Tensor
-        q_v_all = torch.Tensor
+        latent_all = torch.Tensor()
+        q_m_all = torch.Tensor()
+        q_v_all = torch.Tensor()
+
+        latent_all = latent_all.to(self.device)
+        q_m_all = q_m_all.to(self.device)
+        q_v_all = q_v_all.to(self.device)
+
         for batch in data_generator:
             batch = batch.to(self.device)
             latent, q_m, q_v = self.model.get_latent(batch)
             
-            latent_all = torch.cat((latent_all, latent), axis=0)
-            q_m_all = torch.cat((q_m_all, q_m), axis=0)
-            q_v_all = torch.cat((q_v_all, q_v), axis=0)
+            latent_all = torch.cat((latent_all, latent.float()), axis=0) #THERES A BUG HERE. FIXME
+            q_m_all = torch.cat((q_m_all, q_m.float()), axis=0)
+            q_v_all = torch.cat((q_v_all, q_v.float()), axis=0)
 
         return latent_all, q_m_all, q_v_all
-        
+
     def reconstruct_data(self, X: torch.Tensor):
         self.model.eval()
         X = X.to(self.device)

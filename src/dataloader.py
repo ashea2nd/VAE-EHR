@@ -36,7 +36,7 @@ class MixehrICDImputationDataset(Dataset):
             idx = idx.tolist()
         patient_topic_subset = self.patient_topic_data[idx]
         imputed_subset = patient_topic_subset @ self.icd_topic_distribution.T
-        return imputed_subset.astype(np.double)
+        return imputed_subset
 
 class PatientDataSparseCSR():
 
