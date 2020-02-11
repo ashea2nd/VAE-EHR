@@ -204,8 +204,7 @@ class VAETrainerWithDataLoader:
                 # batch = training_data[i:i + batch_size]
             for batch in tqdm(training_generator):
                 batch = batch.to(self.device)
-                print(type(batch))
-                print(batch.type())
+
                 self.optimizer.zero_grad()
                 recon_batch, mu, logvar = self.model(batch)
                 loss, bce, kld = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
