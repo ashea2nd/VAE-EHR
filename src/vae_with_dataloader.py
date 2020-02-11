@@ -211,9 +211,13 @@ class VAETrainerWithDataLoader:
                 loss, bce, kld = self.bce_kld_loss_function(recon_batch, batch, mu, logvar)
                 loss.backward()
 
-                train_loss.append(loss.item() / batch.shape[0])
-                train_bce.append(bce.item() / batch.shape[0])
-                train_kld.append(kld.item() / batch.shape[0])
+                # train_loss.append(loss.item() / batch.shape[0])
+                # train_bce.append(bce.item() / batch.shape[0])
+                # train_kld.append(kld.item() / batch.shape[0])
+
+                train_loss.append(loss.item())
+                train_bce.append(bce.item())
+                train_kld.append(kld.item())
 
                 #print("GRAD NORMS", [p.grad.data.norm(2) for p in model.parameters()])
                 #Gradients are either super large or super small, ranging from 0 to 1e13 before blowing up
@@ -229,9 +233,9 @@ class VAETrainerWithDataLoader:
             # kld_for_epoch = train_kld / total_batches
             # print('====> Epoch: {} Average Training Loss: {:.4f}'.format(epoch, elbo_for_epoch))
 
-            ave_elbo_for_epoch = np.mean(train_loss)
-            ave_bce_for_epoch = np.mean(train_bce)
-            ave_kld_for_epoch = np.mean(train_kld)
+            ave_elbo_for_epoch = np.mean(train_loss[:-1])
+            ave_bce_for_epoch = np.mean(train_bce[:-1])
+            ave_kld_for_epoch = np.mean(train_kld[:-1])
             print('====> Epoch: {} Average Training Loss: {:.4f}'.format(epoch, ave_elbo_for_epoch))
 
             self.train_elbos_per_epoch.append(ave_elbo_for_epoch)
