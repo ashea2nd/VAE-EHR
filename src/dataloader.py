@@ -34,9 +34,6 @@ class MixehrICDImputationDataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        else:
-            idx = [idx]
-
         patient_topic_subset = self.patient_topic_data[idx]
         imputed_subset = patient_topic_subset @ self.icd_topic_distribution.T
         return imputed_subset.astype(np.double)
