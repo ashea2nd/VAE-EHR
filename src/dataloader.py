@@ -41,19 +41,18 @@ class MixehrICDImputationDataset(Dataset):
 class PatientICDSparseVanillaDataset(Dataset):
     def __init__(
         self, 
-        subject_ids_path: str, 
         csr_data_path: str
         ):
-
-        self.subject_ids_df = pd.read_csv(subject_ids_path)
         self.patient_data_csr = pickle.load(open(csr_data_path, 'rb'))
-        assert self.subject_ids_df.shape[0] == self.patient_data_csr.shape[0], "subject ID and data dimension mismatch. {} subject ids but {} rows in data matrix.".format(self.subject_ids_df.shape[0], self.patient_data_csr.shape[0])
-
+        print("Loaded CSR Dataset w/ dim {}".format(self.patient_data_csr.shape))
     def __len__(self):
         return self.patient_data_csr.shape[0]
 
     def __getitem__(self, idx):
         return self.get_patient_as_sparse_torch_tensor(idx)
+
+    def get_feat_dim(self):
+        return self.patient_data_csr.shape[1]
 
     def get_patient_as_sparse_torch_tensor(self, patient_idx):
         #Converts CSR matrix to COO matrix form
