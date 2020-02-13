@@ -64,7 +64,7 @@ class PatientICDSparseVanillaDataset(Dataset):
         vec = torch.FloatTensor(coo.data)
         sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape))
 
-        return sparse_torch_tensor
+        return sparse_torch_tensor.to_dense()
 
 
 class PatientDataSparseCSR():
