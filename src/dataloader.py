@@ -38,6 +38,36 @@ class MixehrICDImputationDataset(Dataset):
         imputed_subset = patient_topic_subset @ self.icd_topic_distribution.T
         return imputed_subset
 
+class PatientICDSparseVanillaDataset(Dataset):
+    def __init__(
+        self, 
+        subject_ids_path: str, 
+        csr_data_path: str
+        ):
+
+        self.subject_ids_df = pd.read_csv(subject_ids_path)
+        self.patient_data_csr = pickle.load(open(csr_data_path, 'rb'))
+        assert self.subject_ids_df.shape[0] == self.patient_data_csr.shape[0], "subject ID and data dimension mismatch. {} subject ids but {} rows in data matrix.".format(self.subject_ids_df.shape[0], self.patient_data_csr.shape[0])
+
+    def __len__(self):
+        return self.patient_data_csr.shape[0]
+
+    def __getitem__(self, idx):
+        return self.get_patient_as_sparse_torch_tensor(idx)
+
+    def get_patient_as_sparse_torch_tensor(self, patient_idx):
+        #Converts CSR matrix to COO matrix form
+        csr_row = self.patient_data_csr[patient_idx]
+        coo = coo_matrix(csr_row)
+        idxs = np.vstack((coo.row, coo.col))
+
+        i = torch.LongTensor(idxs) 
+        vec = torch.FloatTensor(coo.data)
+        sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape))
+
+        return sparse_torch_tensor
+
+
 class PatientDataSparseCSR():
 
     def __init__(

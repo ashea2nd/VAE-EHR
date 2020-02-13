@@ -1,5 +1,8 @@
 from typing import List, Tuple
-from cuml import TSNE, UMAP
+try:
+    from cuml import TSNE, UMAP
+except:
+    pass
 
 import numpy as np 
 import pandas as pd
@@ -33,7 +36,7 @@ class Visualizer:
         plt.savefig("{}.png".format(filename))
         plt.show()
 
-    def plot3d(self, X, filename, colors=None):
+    def plot3d(self, X, filename, colors=None, alpha=0.05):
         fig = plt.figure(figsize=(8,5))
         ax = Axes3D(fig)
 
@@ -43,7 +46,7 @@ class Visualizer:
             zs=X[:, 2],
             c=colors, 
             cmap='cool', 
-            alpha=0.05
+            alpha=alpha
         )
         ax.set_xlabel('component-one')
         ax.set_ylabel('component-two')
