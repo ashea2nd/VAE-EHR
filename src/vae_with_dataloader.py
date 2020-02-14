@@ -174,7 +174,6 @@ class VAETrainerWithDataLoader:
         training_generator: torch.utils.data.DataLoader,
         validation_generator: torch.utils.data.DataLoader = None,
         epochs: int = 800, 
-        batch_size: int = 20,
         kld_beta: float = 1.0,
         save_model_interval: int = 50,
         log_interval: int = 100,
