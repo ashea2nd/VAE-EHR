@@ -7,7 +7,11 @@ import pickle
 import numpy as np
 import annoy
 from annoy import AnnoyIndex
+import os
  
+
+ANNOY_PATH = "./../../../large_data_files"
+
 class MixehrICDImputationDataset(Dataset):
 
     def __init__(
@@ -67,6 +71,72 @@ class PatientICDSparseVanillaDataset(Dataset):
 
         # return sparse_torch_tensor.to_dense()
 
+class PatientSparseSimilarityDataset(Dataset):
+    def __init__(
+        self, 
+        csr_data_path: str,
+        experiment_name: str,
+        use_top_k_neighbors: int = 20
+        ):
+
+        self.use_top_k_neighbors = use_top_k_neighbors
+        self.patient_data_csr = pickle.load(open(csr_data_path, 'rb'))
+
+        print("Loaded CSR Dataset w/ dim {}".format(self.patient_data_csr.shape))
+
+        self.knn_annoy_tree = self.build_annoy_index(filename=experiment_name)
+
+    def __len__(self):
+        return self.patient_data_csr.shape[0]
+
+    def __getitem__(self, idx):
+        sims = np.zeros((self.__len__()))
+        nn_idxs = self.knn_annoy_tree.get_nns_by_item(idx, self.use_top_k_neighbors)
+        distances = [self.knn_annoy_tree.get_distance(idx, nn) for nn in nn_idxs]
+        sims[nn_idxs] = distances
+        return sims
+
+    def get_feat_dim(self):
+        return self.patient_data_csr.shape[0]
+
+    def build_annoy_index(
+        self,
+        filename: str,
+        distance_metric: str = 'angular',
+        n_trees: int = 10
+        ):
+        feature_size = self.patient_data_csr.shape[1]
+
+        try:
+            return self.load_annoy_index(filename, distance_metric)
+        except OSError:
+            pass
+        print("Building ANNOY index...")
+        if distance_metric in ['cosine', 'angular']:
+            distance_metric = 'angular'
+
+        knn_tree = AnnoyIndex(feature_size, distance_metric)
+        for i in range(self.patient_data_csr.shape[0]):
+            knn_tree.add_item(i, self.patient_data_csr[i].toarray()[0])    
+        knn_tree.build(n_trees)
+        knn_tree.save(os.path.join(ANNOY_PATH,"{}.ann".format(filename)))
+        print("    Complete.")
+        return knn_tree
+
+    def load_annoy_index(
+        self, 
+        filename: str, 
+        distance_metric: str="angular"
+        ):
+        feature_size = self.patient_data_csr.shape[-1]
+        knn_tree = AnnoyIndex(feature_size, distance_metric)
+
+        annoy_location = os.path.join(ANNOY_PATH, "{}.ann".format(filename))
+        knn_tree.load(annoy_location)
+
+        print("Loaded existing ANNOY index from {}".format(annoy_location))
+        
+        return knn_tree
 
 class PatientDataSparseCSR():
 
