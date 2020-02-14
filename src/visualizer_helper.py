@@ -20,7 +20,7 @@ class Visualizer:
     def umap_embedding(self, X, n_components: int=2):
         return UMAP(n_components=n_components).fit_transform(X)
 
-    def plot2d(self, X, filename, colors=None, alpha=0.05):
+    def plot2d(self, X, filename, colors=None, alpha=0.05, xlim: Tuple=None, ylim: Tuple=None):
         plt.figure(figsize=(8,5))
         plt.scatter(
             x=X[:, 0], 
@@ -32,11 +32,16 @@ class Visualizer:
         plt.xlabel('component-one')
         plt.ylabel('component-two')
         plt.colorbar()
+
+        if xlim != None:
+            plt.xlim(xlim[0], xlim[1])
+        if ylim != None:
+            plt.ylim(ylim[0], ylim[1])
         
         plt.savefig("{}.png".format(filename))
         plt.show()
 
-    def plot3d(self, X, filename, colors=None, alpha=0.05):
+    def plot3d(self, X, filename, colors=None, alpha=0.05, xlim: Tuple=None, ylim: Tuple=None):
         fig = plt.figure(figsize=(8,5))
         ax = Axes3D(fig)
 
@@ -52,6 +57,11 @@ class Visualizer:
         ax.set_ylabel('component-two')
         ax.set_zlabel('component-three')
         fig.colorbar(plot)
-        
+
+        if xlim != None:
+            plt.xlim(xlim[0], xlim[1])
+        if ylim != None:
+            plt.ylim(ylim[0], ylim[1])
+
         plt.savefig("{}.png".format(filename))
         plt.show()
