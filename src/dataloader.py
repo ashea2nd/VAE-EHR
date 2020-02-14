@@ -56,15 +56,16 @@ class PatientICDSparseVanillaDataset(Dataset):
 
     def get_patient_as_sparse_torch_tensor(self, patient_idx):
         #Converts CSR matrix to COO matrix form
-        csr_row = self.patient_data_csr[patient_idx]
-        coo = coo_matrix(csr_row)
-        idxs = np.vstack((coo.row, coo.col))
+        csr_row = np.asarray(self.patient_data_csr[patient_idx].todense())[0]
+        return csr_row.astype(np.float64)
+        # coo = coo_matrix(csr_row)
+        # idxs = np.vstack((coo.row, coo.col))
 
-        i = torch.LongTensor(idxs) 
-        vec = torch.FloatTensor(coo.data)
-        sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape))
+        # i = torch.LongTensor(idxs) 
+        # vec = torch.FloatTensor(coo.data)
+        # sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape))
 
-        return sparse_torch_tensor.to_dense()
+        # return sparse_torch_tensor.to_dense()
 
 
 class PatientDataSparseCSR():
