@@ -301,11 +301,11 @@ class VAETrainerWithDataLoader:
             # q_m_all = torch.cat((q_m_all, q_m.float()), axis=0)
             # q_v_all = torch.cat((q_v_all, q_v.float()), axis=0)
 
-            if latent_all == None:
+            if type(latent_all) == type(None):
                 latent_all = np.array([]).reshape((0, latent.shape[-1]))
                 q_m_all = np.array([]).reshape((0, latent.shape[-1]))
                 q_v_all = np.array([]).reshape((0, latent.shape[-1]))
-                
+
             latent_all = np.vstack([latent_all, latent.cpu().detach().numpy()])
             q_m_all =  np.vstack([q_m_all, q_m.cpu().detach().numpy()])
             q_v_all =  np.vstack([q_v_all, q_v.cpu().detach().numpy()])
