@@ -281,21 +281,34 @@ class VAETrainerWithDataLoader:
         data_generator.shuffle = False
         self.model.eval()
 
-        latent_all = torch.Tensor()
-        q_m_all = torch.Tensor()
-        q_v_all = torch.Tensor()
+        # latent_all = torch.Tensor()
+        # q_m_all = torch.Tensor()
+        # q_v_all = torch.Tensor()
 
-        latent_all = latent_all.to(self.device)
-        q_m_all = q_m_all.to(self.device)
-        q_v_all = q_v_all.to(self.device)
+        # latent_all = latent_all.to(self.device)
+        # q_m_all = q_m_all.to(self.device)
+        # q_v_all = q_v_all.to(self.device)
+
+        latent_all = None
+        q_m_all = None
+        q_v_all = None
 
         for batch in data_generator:
             batch = batch.to(self.device)
             latent, q_m, q_v = self.model.get_latent(batch)
             
-            latent_all = torch.cat((latent_all, latent.float()), axis=0) #THERES A BUG HERE. FIXME
-            q_m_all = torch.cat((q_m_all, q_m.float()), axis=0)
-            q_v_all = torch.cat((q_v_all, q_v.float()), axis=0)
+            # latent_all = torch.cat((latent_all, latent.float()), axis=0) #THERES A BUG HERE. FIXME
+            # q_m_all = torch.cat((q_m_all, q_m.float()), axis=0)
+            # q_v_all = torch.cat((q_v_all, q_v.float()), axis=0)
+
+            if latent_all == None:
+                latent_all = np.array([]).reshape((0, latent.shape[-1]))
+                q_m_all = np.array([]).reshape((0, latent.shape[-1]))
+                q_v_all = np.array([]).reshape((0, latent.shape[-1]))
+                
+            latent_all = np.vstack([latent_all, latent.cpu().detach().numpy()])
+            q_m_all =  np.vstack([q_m_all, q_m.cpu().detach().numpy()])
+            q_v_all =  np.vstack([q_v_all, q_v.cpu().detach().numpy()])
 
         return latent_all, q_m_all, q_v_all
 
