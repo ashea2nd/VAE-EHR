@@ -293,7 +293,7 @@ class VAETrainerWithDataLoader:
         q_m_all = None
         q_v_all = None
 
-        for batch in data_generator:
+        for batch in tqdm(data_generator):
             batch = batch.to(self.device)
             latent, q_m, q_v = self.model.get_latent(batch)
             
