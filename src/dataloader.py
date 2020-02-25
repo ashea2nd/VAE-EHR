@@ -76,11 +76,14 @@ class PatientSparseSimilarityDataset(Dataset):
         self, 
         csr_data_path: str,
         experiment_name: str,
-        use_top_k_neighbors: int = 20
+        use_top_k_neighbors: int = 20, 
+        matrix_rows_idxs = None
         ):
 
         self.use_top_k_neighbors = use_top_k_neighbors
         self.patient_data_csr = pickle.load(open(csr_data_path, 'rb'))
+        if type(matrix_rows_idxs) != None:
+            self.patient_data_csr = self.patient_data_csr[matrix_rows_idxs]
 
         print("Loaded CSR Dataset w/ dim {}".format(self.patient_data_csr.shape))
 
@@ -138,116 +141,131 @@ class PatientSparseSimilarityDataset(Dataset):
         
         return knn_tree
 
-class PatientDataSparseCSR():
-
+class PatientSparseSimilarityDatasetMultipleVisits(PatientSparseSimilarityDataset):
     def __init__(
         self, 
-        subject_ids_path_from_config: str, 
-        csr_data_path_from_config: str
+        csr_data_path: str, 
+        experiment_name: str,
+        subject_ids_path: str,
+        use_top_k_neighbors: int = 20
         ):
 
-        self.subject_ids_df = pd.read_csv(subject_ids_path_from_config)
-        self.patient_data_csr = pickle.load(open(csr_data_path_from_config, 'rb'))
-        assert self.subject_ids_df.shape[0] == self.patient_data_csr.shape[0], "subject ID and data dimension mismatch. {} subject ids but {} rows in data matrix.".format(self.subject_ids_df.shape[0], self.patient_data_csr.shape[0])
+        self.subject_ids_df = pd.read_csv(subject_ids_path)
+        matrix_row_idxs = self.subject_ids_df.MATRIX_ROW_IDX.to_numpy()
+
+        super().__init__(csr_data_path, experiment_name, use_top_k_neighbors, matrix_row_idxs)
 
 
-    def get_patient_as_sparse_torch_tensor(self, patient_idx):
-        #Converts CSR matrix to COO matrix form
-        csr_row = self.patient_data_csr[patient_idx]
-        coo = coo_matrix(csr_row)
-        idxs = np.vstack((coo.row, coo.col))
+# class PatientDataSparseCSR():
 
-        i = torch.LongTensor(idxs) 
-        vec = torch.FloatTensor(coo.data)
-        sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape)).to_dense()
+#     def __init__(
+#         self, 
+#         subject_ids_path_from_config: str, 
+#         csr_data_path_from_config: str
+#         ):
+
+#         self.subject_ids_df = pd.read_csv(subject_ids_path_from_config)
+#         self.patient_data_csr = pickle.load(open(csr_data_path_from_config, 'rb'))
+#         assert self.subject_ids_df.shape[0] == self.patient_data_csr.shape[0], "subject ID and data dimension mismatch. {} subject ids but {} rows in data matrix.".format(self.subject_ids_df.shape[0], self.patient_data_csr.shape[0])
+
+
+#     def get_patient_as_sparse_torch_tensor(self, patient_idx):
+#         #Converts CSR matrix to COO matrix form
+#         csr_row = self.patient_data_csr[patient_idx]
+#         coo = coo_matrix(csr_row)
+#         idxs = np.vstack((coo.row, coo.col))
+
+#         i = torch.LongTensor(idxs) 
+#         vec = torch.FloatTensor(coo.data)
+#         sparse_torch_tensor = torch.sparse.FloatTensor(i, vec, torch.Size(coo.shape)).to_dense()
         
-        return sparse_torch_tensor
+#         return sparse_torch_tensor
 
-class PatientICDSparseDataset(PatientDataSparseCSR, Dataset):
+# class PatientICDSparseDataset(PatientDataSparseCSR, Dataset):
 
-    def __init__(
-        self, 
-        subject_ids_path_from_config: str, 
-        csr_data_path_from_config: str
-        ):
+#     def __init__(
+#         self, 
+#         subject_ids_path_from_config: str, 
+#         csr_data_path_from_config: str
+#         ):
 
-        super().__init__(subject_ids_path_from_config, csr_data_path_from_config)
+#         super().__init__(subject_ids_path_from_config, csr_data_path_from_config)
 
-    def __len__(self):
-        return len(self.subject_ids_df.index)
+#     def __len__(self):
+#         return len(self.subject_ids_df.index)
 
-    def __getitem__(self, idx):
+#     def __getitem__(self, idx):
 
-        return self.get_patient_as_sparse_torch_tensor(idx)
+#         return self.get_patient_as_sparse_torch_tensor(idx)
 
-class PatientICDSparseSimilarityDataset(PatientDataSparseCSR, Dataset):
+# class PatientICDSparseSimilarityDataset(PatientDataSparseCSR, Dataset):
 
-    def __init__(
-        self, 
-        subject_ids_path_from_config: str, 
-        csr_data_path_from_config: str
-        ):
+#     def __init__(
+#         self, 
+#         subject_ids_path_from_config: str, 
+#         csr_data_path_from_config: str
+#         ):
 
-        super().__init__(subject_ids_path_from_config, csr_data_path_from_config)
+#         super().__init__(subject_ids_path_from_config, csr_data_path_from_config)
 
-    def __len__(self):
-        return len(self.subject_ids_df.index)
+#     def __len__(self):
+#         return len(self.subject_ids_df.index)
 
-    def __getitem__(self, idx):
-        #TODO
-        return
+#     def __getitem__(self, idx):
+#         #TODO
+#         return
 
 
-    def build_annoy_index(self,
-        filename: str,
-        distance_metric: str = 'angular',
-        n_trees: int = 10
-        ):
+#     def build_annoy_index(self,
+#         filename: str,
+#         distance_metric: str = 'angular',
+#         n_trees: int = 10
+#         ):
 
-        feature_size = self.patient_data_csr.shape[-1]
+#         feature_size = self.patient_data_csr.shape[-1]
 
-        try:
-            return load_annoy_index(feature_size, filename)
-        except OSError:
-            pass
+#         try:
+#             return load_annoy_index(feature_size, filename)
+#         except OSError:
+#             pass
         
-        if distance_metric in ['cosine', 'angular']:
-            distance_metric = 'angular'
+#         if distance_metric in ['cosine', 'angular']:
+#             distance_metric = 'angular'
 
-        knn_tree = AnnoyIndex(feature_size, distance_metric)
-        for i in range(self.patient_data_csr.shape[0]):
-            knn_tree.add_item(i, self.patient_data_csr[i].toarray()[0])    
-        knn_tree.build(n_trees)
-        knn_tree.save("{}.ann".format(filename))
-        return knn_tree
+#         knn_tree = AnnoyIndex(feature_size, distance_metric)
+#         for i in range(self.patient_data_csr.shape[0]):
+#             knn_tree.add_item(i, self.patient_data_csr[i].toarray()[0])    
+#         knn_tree.build(n_trees)
+#         knn_tree.save("{}.ann".format(filename))
+#         return knn_tree
 
-    def load_annoy_index(self, 
-                         filename: str, 
-                         distance_metric: str="angular"):
-        feature_size = self.patient_data_csr.shape[-1]
-        knn_tree = AnnoyIndex(feature_size, distance_metric)
-        knn_tree.load("{}.ann".format(filename))
-        return knn_tree
+#     def load_annoy_index(self, 
+#                          filename: str, 
+#                          distance_metric: str="angular"):
+#         feature_size = self.patient_data_csr.shape[-1]
+#         knn_tree = AnnoyIndex(feature_size, distance_metric)
+#         knn_tree.load("{}.ann".format(filename))
+#         return knn_tree
 
-    def construct_knn_graph(batch: scipy.sparse, 
-                             full: scipy.sparse,
-                             filename: str = "PATIENT_ICD_ANNOY_INDEX_ANGULAR",
-                             distance_metric: str="cosine"):
+#     def construct_knn_graph(batch: scipy.sparse, 
+#                              full: scipy.sparse,
+#                              filename: str = "PATIENT_ICD_ANNOY_INDEX_ANGULAR",
+#                              distance_metric: str="cosine"):
         
-        feature_size = batch[0].shape[-1]
-        try:
-            annoy = load_annoy_index(feature_size, filename)
-        except OSError:
-            annoy = build_annoy_index(filename, distance_metric)
+#         feature_size = batch[0].shape[-1]
+#         try:
+#             annoy = load_annoy_index(feature_size, filename)
+#         except OSError:
+#             annoy = build_annoy_index(filename, distance_metric)
             
-        annoy = load_annoy_index(full.shape[-1], filename)
-        sims = np.zeros((batch.shape[0], full.shape[0]))
-        for i, row in enumerate(batch):
-            nn_idxs = annoy.get_nns_by_item(i, 100)
-            distances = [annoy.get_distance(i, nn) for nn in nn_idxs]
-            sims[i][nn_idxs] = distances
+#         annoy = load_annoy_index(full.shape[-1], filename)
+#         sims = np.zeros((batch.shape[0], full.shape[0]))
+#         for i, row in enumerate(batch):
+#             nn_idxs = annoy.get_nns_by_item(i, 100)
+#             distances = [annoy.get_distance(i, nn) for nn in nn_idxs]
+#             sims[i][nn_idxs] = distances
             
-        return sims
+#         return sims
 
     # def compute_sparse_similarity(batch: scipy.sparse, 
     #                               full: scipy.sparse, 
