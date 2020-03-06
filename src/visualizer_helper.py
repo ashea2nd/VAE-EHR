@@ -1,6 +1,7 @@
 from typing import List, Tuple
 try:
-    from cuml import TSNE, UMAP
+    from cuml import UMAP
+    from cuml import TSNE
 except:
     pass
 
@@ -15,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class Visualizer:
     def tsne_embedding(self, X, n_components: int=2):
-        return TSNE(n_components=n_components, method="barnes_hut").fit_transform(X)
+        return TSNE(n_components=n_components, method='barnes_hut').fit_transform(X)
 
     def umap_embedding(self, X, n_components: int=2):
         return UMAP(n_components=n_components).fit_transform(X)
@@ -26,7 +27,7 @@ class Visualizer:
             x=X[:, 0], 
             y=X[:, 1],
             c=colors, 
-            cmap='cool', 
+            # cmap='cool', 
             alpha=alpha
         )
         plt.xlabel('component-one')
@@ -50,7 +51,7 @@ class Visualizer:
             ys=X[:, 1],
             zs=X[:, 2],
             c=colors, 
-            cmap='cool', 
+            # cmap='cool', 
             alpha=alpha
         )
         ax.set_xlabel('component-one')
