@@ -18,8 +18,8 @@ class Visualizer:
     def tsne_embedding(self, X, n_components: int=2):
         return TSNE(n_components=n_components, method='barnes_hut').fit_transform(X)
 
-    def umap_embedding(self, X, n_components: int=2):
-        return UMAP(n_components=n_components).fit_transform(X)
+    def umap_embedding(self, X, n_components: int=2, lc=50):
+        return UMAP(n_components=n_components, local_connectivity=lc).fit_transform(X)
 
     def plot2d(self, X, filename, colors=None, alpha=0.05, xlim: Tuple=None, ylim: Tuple=None):
         plt.figure(figsize=(8,5))
