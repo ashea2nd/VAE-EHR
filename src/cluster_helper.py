@@ -103,7 +103,7 @@ class ClusterProcessor():
                 print("Empty cluster found:", c)
         return np.array(centroids)
 
-    def top_diseases_in_cluster(self, cluster, topk=3):
+    def top_diseases_in_cluster(self, cluster, topk=3, short_title=True):
         remaining_patient_idxs = self.cluster_assignments[self.cluster_assignments["CLUSTER"] == cluster]["ORIGINAL_INDEX"].values
         remaining_patient_icd_binary = self.patient_icd_binary[remaining_patient_idxs]
         disease_distribution = np.sum(remaining_patient_icd_binary, axis=0).tolist()[0]
@@ -117,9 +117,10 @@ class ClusterProcessor():
         # print(icd9codes_topk)
         # print(self.icd9diag[self.icd9diag['ICD9_CODE'] == '9974']["LONG_TITLE"].values)
 
+        title_col = "SHORT_TITLE" if short_title else "LONG_TITLE"
         titles = []
         for icd9code in icd9codes_topk:
-            title = self.icd9diag[self.icd9diag['ICD9_CODE'] == icd9code]["LONG_TITLE"].values
+            title = self.icd9diag[self.icd9diag['ICD9_CODE'] == icd9code][title_col].values
             if len(title) == 0:
                 titles.append(icd9code)
             else:
@@ -127,7 +128,7 @@ class ClusterProcessor():
         # titles = list(map(lambda icd9code: self.icd9diag[self.icd9diag['ICD9_CODE'] == icd9code]["LONG_TITLE"].values[0], icd9codes_topk))
 
         return pd.DataFrame({"ICD9_CODE": icd9codes_topk,
-                             "LONG_TITLE": titles,
+                             title_col: titles,
                              "DISEASE_COUNT": disease_counts_topk})
         # return list(zip(icd9codes_topk, titles, disease_counts_topk))
 
