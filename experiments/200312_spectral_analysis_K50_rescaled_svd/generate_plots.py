@@ -63,12 +63,16 @@ def create_centroid_cluster_df(y, cluster_labels, topk=3):
     cluster_sizes = np.unique(cluster_labels, return_counts=True)[1].tolist()
         
     titles = ["" for _ in range(centroids.shape[0])]
-    print(len(titles))
+    # print(len(titles))
     for c in tqdm(np.unique(cluster_labels)):
         top_k_df = cp.top_diseases_in_cluster(cluster=c, topk=3)
+        # print(top_k_df)
         top_k_titles = top_k_df["LONG_TITLE"].values.tolist()
-        top_k_titles_asstr = "\n".join(titles)
+        # print(top_k_titles)
+        top_k_titles_asstr = "\n".join(top_k_titles)
+        # print(top_k_titles_asstr)
         titles[c] = top_k_titles_asstr
+        # break
         
         
     centroid_dict = {"x": x,
@@ -89,14 +93,14 @@ print(np.unique(Y_cluster_labels))
 
 Y_2d_df = create_centroid_cluster_df(Y_umap_2d, Y_cluster_labels)
 print("Done")
-# plt.figure(figsize=(15,15))
-# ax = sns.scatterplot(x="x", y="y", size="cluster_size", hue="cluster",
-#             sizes=(300, 2000), alpha=.5, palette="muted",
-#             data=Y_2d_df)
-# for line in tqdm(range(0,Y_2d_df.shape[0])):
-#      ax.text(Y_2d_df.x[line], Y_2d_df.y[line], Y_2d_df.title[line])
+plt.figure(figsize=(15,15))
+ax = sns.scatterplot(x="x", y="y", size="cluster_size", hue="cluster",
+            sizes=(300, 2000), alpha=.5, palette="muted",
+            data=Y_2d_df)
+for line in tqdm(range(0,Y_2d_df.shape[0])):
+     ax.text(Y_2d_df.x[line], Y_2d_df.y[line], Y_2d_df.title[line])
 
-# h,l = ax.get_legend_handles_labels()
-# plt.legend(h[-5:], l[-5:], loc="upper right")
+h,l = ax.get_legend_handles_labels()
+plt.legend(h[-5:], l[-5:], loc="upper right")
 
-# plt.savefig("./figures/CLUSTER_PLOT_TOP_WORDS.png")
+plt.savefig("./figures/CLUSTER_PLOT_TOP_WORDS.png")
