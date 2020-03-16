@@ -88,15 +88,15 @@ print(np.unique(Y_cluster_labels))
 
 
 Y_2d_df = create_centroid_cluster_df(Y_umap_2d, Y_cluster_labels)
+print("Done")
+# plt.figure(figsize=(15,15))
+# ax = sns.scatterplot(x="x", y="y", size="cluster_size", hue="cluster",
+#             sizes=(300, 2000), alpha=.5, palette="muted",
+#             data=Y_2d_df)
+# for line in tqdm(range(0,Y_2d_df.shape[0])):
+#      ax.text(Y_2d_df.x[line], Y_2d_df.y[line], Y_2d_df.title[line])
 
-plt.figure(figsize=(15,15))
-ax = sns.scatterplot(x="x", y="y", size="cluster_size", hue="cluster",
-            sizes=(300, 2000), alpha=.5, palette="muted",
-            data=Y_2d_df)
-for line in tqdm(range(0,Y_2d_df.shape[0])):
-     ax.text(Y_2d_df.x[line], Y_2d_df.y[line], Y_2d_df.title[line])
+# h,l = ax.get_legend_handles_labels()
+# plt.legend(h[-5:], l[-5:], loc="upper right")
 
-h,l = ax.get_legend_handles_labels()
-plt.legend(h[-5:], l[-5:], loc="upper right")
-
-plt.savefig("./figures/CLUSTER_PLOT_TOP_WORDS.png")
+# plt.savefig("./figures/CLUSTER_PLOT_TOP_WORDS.png")
