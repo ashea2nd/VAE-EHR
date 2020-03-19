@@ -2,7 +2,7 @@ import configparser
 import json
 import arrow
 
-class Config:
+class SpectralConfig:
 	def __init__(self, config_file_path: str, date: str=None):
 		
 		config = configparser.ConfigParser()
@@ -11,19 +11,9 @@ class Config:
 		###DATA Settings
 		#Path to Patient_ICD and ICD9Code CSV's
 		try:
-			self.patient_icd_path = config['EXPERIMENT']['patient_icd_path']
+			self.patient_evector_path = config['SPECTRAL']['patient_evector_path']
 		except:
-			self.patient_icd_path = "Path not specified"
-
-		try:
-			self.icd9codes_path = config['EXPERIMENT']['icd9codes_path']
-		except:
-			self.icd9codes_path = "Path not specified"
-
-		try:
-			self.subject_ids_path = config['EXPERIMENT']['subject_ids_path']
-		except:
-			self.subject_ids_path = "Path not specified"
+			self.patient_evector_path = "Path not specified"
 
 		#Experiment Name
 		if not date:
