@@ -103,8 +103,9 @@ class ClusterProcessor():
                 print("Empty cluster found:", c)
         return np.array(centroids)
 
-    def top_diseases_in_cluster(self, cluster, topk=3, short_title=True):
-        remaining_patient_idxs = self.cluster_assignments[self.cluster_assignments["CLUSTER"] == cluster]["ORIGINAL_INDEX"].values
+    def top_diseases_in_cluster(self, cluster, topk=3, short_title=True, mc_cluster=False):
+        cluster_col = "CLUSTER" if not mc_cluster else "MC_CLUSTER"
+        remaining_patient_idxs = self.cluster_assignments[self.cluster_assignments[cluster_col] == cluster]["ORIGINAL_INDEX"].values
         remaining_patient_icd_binary = self.patient_icd_binary[remaining_patient_idxs]
         disease_distribution = np.sum(remaining_patient_icd_binary, axis=0).tolist()[0]
 
@@ -132,7 +133,7 @@ class ClusterProcessor():
                              "DISEASE_COUNT": disease_counts_topk})
         # return list(zip(icd9codes_topk, titles, disease_counts_topk))
 
-    def plot_disease_distribution(self, topk, cluster=None, plot=True):
+    def plot_disease_distribution(self, topk, cluster=None, plot=True, figsize=(15,15)):
         if cluster == None:
             remaining_patient_idxs = self.cluster_assignments["ORIGINAL_INDEX"].values
             remaining_patient_icd_binary = self.patient_icd_binary[remaining_patient_idxs]
@@ -160,7 +161,7 @@ class ClusterProcessor():
         # titles = list(map(lambda icd9code: self.icd9diag[self.icd9diag['ICD9_CODE'] == icd9code]["LONG_TITLE"].values[0], icd9codes_topk))
 
         if plot:
-            plt.figure(figsize=(5, 10))
+            plt.figure(figsize=figsize)
             plt.barh(np.arange(len(disease_counts_topk)),
                      disease_counts_topk,
                      align='center')
@@ -172,5 +173,6 @@ class ClusterProcessor():
                 plt.title("Disease Distribution: Top {}".format(topk))
             else:
                 plt.title("Disease Distribution: Cluster {}, Top {}".format(cluster, topk))
+            plt.savefig("disease_distribution_topk{}_cluster{}.png".format(topk, cluster))
             plt.show()
         return list(zip(icd9codes_topk, titles, disease_counts_topk))

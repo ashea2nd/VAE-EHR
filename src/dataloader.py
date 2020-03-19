@@ -71,6 +71,20 @@ class PatientICDSparseVanillaDataset(Dataset):
 
         # return sparse_torch_tensor.to_dense()
 
+class PatientEigenVectorDataset(Dataset):
+    def __init__(
+        self, 
+        eigenvector_path: str
+        )
+        self.evectors = pickle.load(open(eigenvector_path, 'rb'))
+        print("Loaded eigenvector matrix of size {}".format(self.evectors.shape))
+
+    def __len__(self):
+        return self.evectors.shape[0]
+
+    def __getitem__(self, idx):
+        return self.evectors[idx]
+
 class PatientSparseSimilarityDataset(Dataset):
     def __init__(
         self, 

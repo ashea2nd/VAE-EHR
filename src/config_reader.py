@@ -10,9 +10,26 @@ class Config:
 		
 		###DATA Settings
 		#Path to Patient_ICD and ICD9Code CSV's
-		self.patient_icd_path = config['EXPERIMENT']['patient_icd_path']
-		self.icd9codes_path = config['EXPERIMENT']['icd9codes_path']
-		self.subject_ids_path = config['EXPERIMENT']['subject_ids_path']
+		try:
+			self.patient_icd_path = config['EXPERIMENT']['patient_icd_path']
+		except:
+			self.patient_icd_path = "Path not specified"
+
+		try:
+			self.icd9codes_path = config['EXPERIMENT']['icd9codes_path']
+		except:
+			self.icd9codes_path = "Path not specified"
+
+		try:
+			self.subject_ids_path = config['EXPERIMENT']['subject_ids_path']
+		except:
+			self.subject_ids_path = "Path not specified"
+
+		try:
+			self.patient_evector_path = config['EXPERIMENT']['patient_evector_path']
+		except:
+			self.patient_evector_path = "Path not specified"
+
 		
 		#Experiment Name
 		if not date:
