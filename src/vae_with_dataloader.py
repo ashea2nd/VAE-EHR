@@ -125,6 +125,7 @@ class VAETrainerWithDataLoader:
         self,
         model: nn.Module,
         optimizer: torch.optim,
+        model_path: str,
         experiment_name: str,
         kld_beta: float = 1.0
         ):
@@ -133,6 +134,8 @@ class VAETrainerWithDataLoader:
 
         self.model.to(self.device)
         self.optimizer = optimizer
+
+        self.model_path = model_path
 
         self.experiment_name = experiment_name
 
@@ -241,7 +244,7 @@ class VAETrainerWithDataLoader:
             self.train_ave_kld_per_epoch.append(ave_kld_for_epoch)
 
             if epoch % save_model_interval == 0:
-                torch.save(self.model.state_dict(), "VAE_exp_{}_epoch_{}.pkl".format(self.experiment_name, epoch))
+                torch.save(self.model.state_dict(), "{}/VAE_exp_{}_epoch_{}.pkl".format(self.model_path, self.experiment_name, epoch))
 
             ###VALIDATION
             if validation_generator != None:
