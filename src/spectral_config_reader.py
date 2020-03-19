@@ -18,7 +18,7 @@ class SpectralConfig:
 		#Experiment Name
 		if not date:
 			date = arrow.now().format('YYMMDD')
-		experiment = config['EXPERIMENT']['experiment']
+		experiment = config['SPECTRAL']['experiment']
 		self.experiment_name = "{}_{}".format(date, experiment)
 
 		###MODEL Settings

@@ -75,7 +75,7 @@ class PatientEigenVectorDataset(Dataset):
     def __init__(
         self, 
         eigenvector_path: str
-        )
+        ):
         self.evectors = pickle.load(open(eigenvector_path, 'rb'))
         print("Loaded eigenvector matrix of size {}".format(self.evectors.shape))
 
@@ -84,6 +84,9 @@ class PatientEigenVectorDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.evectors[idx]
+
+    def get_feat_dim(self):
+        return self.evectors.shape[1]
 
 class PatientSparseSimilarityDataset(Dataset):
     def __init__(
