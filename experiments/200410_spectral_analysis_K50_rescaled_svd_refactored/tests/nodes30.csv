@@ -1,0 +1,31 @@
+Id,Label,Size,Color
+0,"(585, Renal failure)",2340,0
+1,"(411, Ischemic Heart Disease)",4013,1
+2,"(656, Other perinatal conditions of fetus or newborn)",2484,2
+3,"(276, Disorders of fluid, electrolyte, and acid-base balance)",6687,3
+4,"(411, Ischemic Heart Disease)",2604,1
+5,"(icd9:V3001, Single liveborn, born in hospital, delivered by cesarean section)",883,4
+6,"(icd9:V3000, Single liveborn, born in hospital, delivered by cesarean section)",435,5
+7,"(401, Hypertension)",3693,6
+8,"(656, Other perinatal conditions of fetus or newborn)",291,2
+9,"(276, Disorders of fluid, electrolyte, and acid-base balance)",2187,3
+10,"(430, Intracranial hemorrhage)",119,7
+11,"(411, Ischemic Heart Disease)",1914,1
+12,"(411, Ischemic Heart Disease)",56,1
+13,"(1010, Other tests)",86,8
+14,"(411, Ischemic Heart Disease)",78,1
+15,"(276, Disorders of fluid, electrolyte, and acid-base balance)",3545,3
+16,"(icd9:V3000, Single liveborn, born in hospital, delivered by cesarean section)",121,5
+17,"(1010, Other tests)",48,8
+18,"(icd9:V3001, Single liveborn, born in hospital, delivered by cesarean section)",65,4
+19,"(icd9:V3000, Single liveborn, born in hospital, delivered by cesarean section)",146,5
+20,"(656, Other perinatal conditions of fetus or newborn)",46,2
+21,"(icd9:V3001, Single liveborn, born in hospital, delivered by cesarean section)",36,4
+22,"(637, Short gestation; low birth weight; and fetal growth retardation)",498,9
+23,"(1010, Other tests)",45,8
+24,"(icd9:V3000, Single liveborn, born in hospital, delivered by cesarean section)",73,5
+25,"(637, Short gestation; low birth weight; and fetal growth retardation)",393,9
+26,"(427, Cardiac dysrhythmias)",3152,10
+27,"(401, Hypertension)",4313,6
+28,"(411, Ischemic Heart Disease)",65,1
+29,"(411, Ischemic Heart Disease)",2101,1
